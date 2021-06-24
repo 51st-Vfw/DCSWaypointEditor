@@ -7,5 +7,7 @@
 pip install -r requirements.txt
 pyinstaller -w  dcs_wp_editor.py 
 ```
+ensure map.bin and arrow.bin are in root dir for install
+
 
 pyinstaller -w -F dcs_wp_editor.py 

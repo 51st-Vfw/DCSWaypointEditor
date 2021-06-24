@@ -97,8 +97,8 @@ def exception_gui(exc_info):
 
 
 def check_version(current_version):
-    version_url = "https://raw.githubusercontent.com/Viral-51stvfw/DCSWaypointEditor/master/release_version.txt"
-    releases_url = "https://github.com/Viral-51stvfw/DCSWaypointEditor/releases"
+    version_url = "https://raw.githubusercontent.com/51st-Vfw/DCSWaypointEditor/convert-to-51st/release_version.txt"
+    releases_url = "https://github.com/51st-Vfw/DCSWaypointEditor/releases"
 
     try:
         with urllib.request.urlopen(version_url) as response:
@@ -576,7 +576,7 @@ class GUI:
         # "X-00199287 Z+00523070, 0 ft"   Not sure how to convert this yet
 
         # "37 T FJ 36255 11628, 5300 ft"  Tessaract did not like this one because the DCS font J looks too much like )
-        res = re.match("^(\d+ [a-zA-Z] [a-zA-Z][a-zA-Z] \d+ \d+), (\d+) (FT|M)", coords_string)
+        res = re.match("^(\d+ [a-zA-Z] [a-zA-Z][a-zA-Z] \d+ \d+), [-]?(\d+) (FT|M)", coords_string)
         if res is not None:
             mgrs_string = res.group(1).replace(" ", "")
             decoded_mgrs = mgrs.UTMtoLL(mgrs.decode(mgrs_string))
@@ -590,7 +590,7 @@ class GUI:
             return position, elevation
 
         # "N43°10.244 E40°40.204, 477 ft"  Degrees and decimal minutes
-        res = re.match("^([NS])(\d+)°([^\s]+) ([EW])(\d+)°([^,]+), (\d+) (FT|M)", coords_string)
+        res = re.match("^([NS])(\d+)°([^\s]+) ([EW])(\d+)°([^,]+), [-]?(\d+) (FT|M)", coords_string)
         if res is not None:
             lat_str = res.group(2) + " " + res.group(3) + " " + res.group(1)
             lon_str = res.group(5) + " " + res.group(6) + " " + res.group(4)
@@ -603,7 +603,7 @@ class GUI:
             return position, elevation
 
         # "N42-43-17.55 E40-38-21.69, 0 ft" Degrees, minutes and decimal seconds
-        res = re.match("^([NS])(\d+)-(\d+)-([^\s]+) ([EW])(\d+)-(\d+)-([^,]+), (\d+) (FT|M)", coords_string)
+        res = re.match("^([NS])(\d+)-(\d+)-([^\s]+) ([EW])(\d+)-(\d+)-([^,]+), [-]?(\d+) (FT|M)", coords_string)
         if res is not None:
             lat_str = res.group(2) + " " + res.group(3) + " " + res.group(4) + " " + res.group(1)
             lon_str = res.group(6) + " " + res.group(7) + " " + res.group(8) + " " + res.group(5)
@@ -616,7 +616,7 @@ class GUI:
             return position, elevation
 
         # "43°34'37"N 29°11'18"E, 0 ft" Degrees minutes and seconds
-        res = re.match("^(\d+)°(\d+)'([^\"]+)\"([NS]) (\d+)°(\d+)'([^\"]+)\"([EW]), (\d+) (FT|M)", coords_string)
+        res = re.match("^(\d+)°(\d+)'([^\"]+)\"([NS]) (\d+)°(\d+)'([^\"]+)\"([EW]), [-]?(\d+) (FT|M)", coords_string)
         if res is not None:
             lat_str = res.group(1) + " " + res.group(2) + " " + res.group(3) + " " + res.group(4)
             lon_str = res.group(5) + " " + res.group(6) + " " + res.group(7) + " " + res.group(8)
