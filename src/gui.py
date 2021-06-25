@@ -572,6 +572,7 @@ class GUI:
         self.profile = Profile('')
 
     def parse_map_coords_string(self, coords_string, tomcat_mode=False):
+        position = None
         coords_string = coords_string.upper()
         # "X-00199287 Z+00523070, 0 ft"   Not sure how to convert this yet
 
@@ -650,7 +651,11 @@ class GUI:
             elevation = self.capture_map_coords(2074, 97, 966, 32)
 
         self.captured_map_coords = str()
-        self.logger.info("Parsed captured text: " + str(position))
+
+        if position is not None:
+            self.logger.info("Parsed captured text: " + str(position))
+        else:
+            self.logger.info("Position was null for coords_string: " + str(coords_string))
         return position, elevation
 
     def input_parsed_coords(self):
