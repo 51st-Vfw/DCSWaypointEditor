@@ -155,10 +155,13 @@ def gui_backgrounded_operation(title, bop_fn=None, bop_args=None):
     # background. once DCS is not frontmost, we'll create the window and continue.
     #
     while True:
+        fgwin_title = GetWindowText(GetForegroundWindow())
         if not bop_thread.is_alive() and progress_q.empty():
             logger.debug("Backgrounded op thread has passed beyond the veil")
             break
-        elif GetWindowText(GetForegroundWindow()) != "Digital Combat Simulator" and window is None:
+        elif (fgwin_title != "Digital Combat Simulator" and
+              fgwin_title != "DCS.openbeta" and
+              fgwin_title != "DCS") and (window is None):
             window = PyGUI.Window(title, layout, modal=True, finalize=True, disable_close=True)
             window['ux_progress'].update(progress)
 
