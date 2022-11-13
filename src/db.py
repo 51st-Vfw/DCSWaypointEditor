@@ -71,11 +71,18 @@ class DatabaseInterface:
             for metadata in db.get_columns('AvionicsSetupModel'):
                 if self.db_version == 5 and metadata.name == 'f16_cmds_setup_p6':
                     #
-                    # db v.4 adds "f16_cmds_setup_p6" column to "AvionicsSetupModel" table.
+                    # db v.6 adds "f16_cmds_setup_p6" column to "AvionicsSetupModel" table.
                     #
                     self.db_version = 6
                     break
-            
+            for metadata in db.get_columns('AvionicsSetupModel'):
+                if self.db_version == 6 and metadata.name == 'f16_mfd_setup_opt':
+                    #
+                    # db v.7 adds "f16_mfd_setup_opt" column to "AvionicsSetupModel" table.
+                    #
+                    self.db_version = 7
+                    break
+
             if self.db_version == 1:
                 avionics_setup_field = CharField(null=True, unique=False)
                 with db.atomic():
@@ -121,8 +128,16 @@ class DatabaseInterface:
                     )
                 self.db_version = 6
                 self.logger.debug(f"Migrated database {db_name} to v{self.db_version}")
-            self.logger.debug(f"Database {db_name} is v{self.db_version}")
+            if self.db_version == 6:
+                is_init_field = IntegerField(default=False)
+                with db.atomic():
+                    migrate(
+                        migrator.add_column('AvionicsSetupModel', 'f16_mfd_setup_opt', is_init_field),
+                    )
+                self.db_version = 7
+                self.logger.debug(f"Migrated database {db_name} to v{self.db_version}")
 
+            self.logger.debug(f"Database {db_name} is v{self.db_version}")
 
         except Exception as e:
             self.logger.error(f"Database migration fails, {e}")

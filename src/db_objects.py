@@ -230,6 +230,14 @@ class Profile:
         if self.av_setup_name is not None:
             try:
                 avs_dict = dict()
+
+                # Default MFD format setups (as of DCS v2.8.0.32235).
+                #
+                avs_dict['f16_mfd_setup_nav_dflt'] = "20,9,8,6,7,1"     # L: FCR, TEST, DTE; R: SMS, HSD, -
+                avs_dict['f16_mfd_setup_air_dflt'] = "20,10,9,6,7,1"    # L: FCR, FLCS, TEST; R: SMS, HSD -
+                avs_dict['f16_mfd_setup_gnd_dflt'] = "20,10,9,6,7,1"    # L: FCR, FLCS, TEST; R: SMS, HSD -
+                avs_dict['f16_mfd_setup_dog_dflt'] = "20,1,1,6,1,1"     # L: FCR, -, -; R: SMS, -, -
+
                 try:
                     setup = AvionicsSetupModel.get(AvionicsSetupModel.name == self.av_setup_name)
                     if setup.tacan_yard is not None:
@@ -242,6 +250,8 @@ class Profile:
                         avs_dict['f16_mfd_setup_gnd'] = setup.f16_mfd_setup_gnd
                     if setup.f16_mfd_setup_dog is not None:
                         avs_dict['f16_mfd_setup_dog'] = setup.f16_mfd_setup_dog
+                    if setup.f16_mfd_setup_opt is not None:
+                        avs_dict['f16_mfd_setup_opt'] = setup.f16_mfd_setup_opt
                     if setup.f16_cmds_setup_p1 is not None:
                         avs_dict['f16_cmds_setup_p1'] = setup.f16_cmds_setup_p1
                     if setup.f16_cmds_setup_p2 is not None:

@@ -86,7 +86,7 @@ class AvionicsSetupModel(BaseModel):
     #
     # CSV list of 6 integers corresponding to MFD OSBs L 14, L 13, L 12, R 14, R 13, R 12
     # (i.e., list[0] = L 14, list[1] = L 13, etc.). integers values are the OSB to push on
-    # the format select page to select desired format. None (empty string) indicates default.
+    # the format select page to select desired format.
     #
     f16_mfd_setup_nav = CharField(null=True, default=None)
     f16_mfd_setup_air = CharField(null=True, default=None)
@@ -135,6 +135,14 @@ class AvionicsSetupModel(BaseModel):
     # (see above).
     #
     f16_cmds_setup_p6 = CharField(null=True, default=None)
+
+    # airframes supported: viper
+    #
+    # Fields added in db v.7, v1.6.0-51stVFW and later
+    #
+    # Selects optimized setup of MFD formats.
+    #
+    f16_mfd_setup_opt = IntegerField(default=False)
 
     @staticmethod
     def list_all():
