@@ -41,7 +41,7 @@ mfd_format_map = { ""     : 1,
                    "WPN"  : 18
 }
 
-# Maps UI MFD format key base onto default MFD format setups (as of DCS v2.7.4.9632).
+# Maps UI MFD format key base onto default MFD format setups (as of DCS v2.8.0.32235).
 #
 mfd_default_setup_map = { 'ux_nav' : [ 20, 9, 8, 6, 7, 1 ],     # L: FCR, TEST, DTE; R: SMS, HSD, -
                           'ux_air' : [ 20, 10, 9, 6, 7, 1 ],    # L: FCR, FLCS, TEST; R: SMS, HSD -
@@ -376,12 +376,13 @@ class AvionicsSetupGUI:
         # ---- Management Controls
 
         layout_mgmt = [
-            [PyGUI.Text("Avionics setup name:"),
+            [PyGUI.Text("Avionics setup:"),
              PyGUI.Combo(values=["DCS Default"], key='ux_tmplt_select', readonly=True,
-                         enable_events=True, size=(32,1)),
-             PyGUI.Button("Save...", key='ux_tmplt_save', size=(10,1)),
+                         enable_events=True, size=(29,1)),
+             PyGUI.Button("Save As...", key='ux_tmplt_save_as', size=(10,1)),
+             PyGUI.Button("Update", key='ux_tmplt_update', size=(10,1)),
              PyGUI.Button("Delete...", key='ux_tmplt_delete', size=(10,1)),
-             PyGUI.VerticalSeparator(pad=(24,12)),
+             PyGUI.VerticalSeparator(pad=(16,12)),
              PyGUI.Button("Done", key='ux_done', size=(10,1), pad=(6,12))]
         ]
 
@@ -501,10 +502,12 @@ class AvionicsSetupGUI:
         else:
             save_disabled = True
         if self.is_setup_default():
-            self.window['ux_tmplt_save'].update(text="Save As...", disabled=save_disabled)
+            self.window['ux_tmplt_save_as'].update(disabled=save_disabled)
+            self.window['ux_tmplt_update'].update(disabled=True)
             self.window['ux_tmplt_delete'].update(disabled=True)
         else:
-            self.window['ux_tmplt_save'].update(text="Update", disabled=save_disabled)
+            self.window['ux_tmplt_save_as'].update(disabled=save_disabled)
+            self.window['ux_tmplt_update'].update(disabled=save_disabled)
             self.window['ux_tmplt_delete'].update(disabled=False)
 
 
@@ -866,21 +869,22 @@ class AvionicsSetupGUI:
         self.copy_f16_misc_dbase_to_ui()
         self.copy_tacan_dbase_to_ui()
 
-    def do_template_save(self, event):
-        if self.is_setup_default():
-            name = PyGUI.PopupGetText("Template Name", "Saving New Template")
-            if name is not None:
-                try:
-                    self.dbase_setup = AvionicsSetupModel.create(name=name)
-                    self.copy_f16_cmds_ui_to_dbase(db_save=False)
-                    self.copy_f16_mfd_ui_to_dbase(db_save=False)
-                    self.copy_f16_misc_ui_to_dbase(db_save=False)
-                    self.copy_tacan_ui_to_dbase(db_save=True)
-                    self.update_gui_template_list()
-                except:
-                    PyGUI.Popup(f"Unable to create a template named '{name}'. Is there already" +
-                                 " a template with that name?", title="Error")
-        else:
+    def do_template_save_as(self, event):
+        name = PyGUI.PopupGetText("Template Name", "Creating New Template")
+        if name is not None:
+            try:
+                self.dbase_setup = AvionicsSetupModel.create(name=name)
+                self.copy_f16_cmds_ui_to_dbase(db_save=False)
+                self.copy_f16_mfd_ui_to_dbase(db_save=False)
+                self.copy_f16_misc_ui_to_dbase(db_save=False)
+                self.copy_tacan_ui_to_dbase(db_save=True)
+                self.update_gui_template_list()
+            except:
+                PyGUI.Popup(f"Unable to create a template named '{name}'. Is there already" +
+                                " a template with that name?", title="Error")
+
+    def do_template_update(self, event):
+        if not self.is_setup_default():
             self.copy_f16_cmds_ui_to_dbase(db_save=True)
             self.copy_f16_mfd_ui_to_dbase(db_save=True)
             self.copy_f16_misc_ui_to_dbase(db_save=True)
@@ -1016,7 +1020,8 @@ class AvionicsSetupGUI:
                         'ux_jhmcs_rwr' : self.do_misc_dirty,
                         'ux_jhmcs_dc_select' : self.do_misc_dirty,
                         'ux_tmplt_select' : self.do_template_select,
-                        'ux_tmplt_save' : self.do_template_save,
+                        'ux_tmplt_save_as' : self.do_template_save_as,
+                        'ux_tmplt_update' : self.do_template_update,
                         'ux_tmplt_delete' : self.do_template_delete,
         }
 
