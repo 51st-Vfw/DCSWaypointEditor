@@ -929,14 +929,15 @@ class ViperDriver(Driver):
         self.icp_btn("ENTR")
         self.icp_data("DN")
 
-    def enter_mfd_format(self, lr, osb, format):
+    def enter_mfd_format(self, lr, osb, format, format_dflt):
         #
         # NOTE: For this to work correctly, the format mapped to the OSB should *NOT* be selected
         # NOTE: in the MFD upon entry.
         #
         self.mfd_btn(lr, osb)                           # Select OSB to set format for
-        self.mfd_btn(lr, osb, delay_after=0.1)          # Enter format select mode
-        self.mfd_btn(lr, format, delay_after=0.1)       # Select format
+        if format != format_dflt:
+            self.mfd_btn(lr, osb, delay_after=0.1)      # Enter format select mode
+            self.mfd_btn(lr, format, delay_after=0.1)   # Select format
 
     def enter_waypoints(self, wps, command_q=None, progress_q=None):
         if len(wps) > 0:
@@ -1003,7 +1004,7 @@ class ViperDriver(Driver):
 
             self.icp_data("RTN")
 
-    def enter_mfd(self, mode, spec, command_q=None, progress_q=None):
+    def enter_mfd(self, mode, spec, spec_dflt, command_q=None, progress_q=None):
         if spec is not None:
             self.bkgnd_advance(command_q, progress_q)
 
@@ -1019,8 +1020,8 @@ class ViperDriver(Driver):
 
             # The current default setup of the Viper has a mixture of OSB 13 and 14 formats
             # selected in the four master modes (NAV, AA, AG, DGFT). For enter_mfd_format to
-            # work correctly, the OSB being setup should not be selected. Start the setup
-            # from OSB 12 on each MFD as in 2.7.4 none of the modes start with an OSB 12
+            # work correctly, the OSB being set up should not be selected. Start the setup
+            # from OSB 12 on each MFD as in 2.8.0 none of the modes start with an OSB 12
             # format selected on either MFD.
             #
             # After setting up the formats, OSB 14 will be selected on both MFDs.
@@ -1029,13 +1030,15 @@ class ViperDriver(Driver):
             # TODO: act appropriately in enter_mfd_format.
             #
             fmt_osb_list = [ str(osb) for osb in spec.split(",") ]
-            self.enter_mfd_format("R", "12", fmt_osb_list[5])
-            self.enter_mfd_format("R", "13", fmt_osb_list[4])
-            self.enter_mfd_format("R", "14", fmt_osb_list[3])
+            fmt_osb_list_dflt = [ str(osb) for osb in spec_dflt.split(",") ]
 
-            self.enter_mfd_format("L", "12", fmt_osb_list[2])
-            self.enter_mfd_format("L", "13", fmt_osb_list[1])
-            self.enter_mfd_format("L", "14", fmt_osb_list[0])
+            self.enter_mfd_format("R", "12", fmt_osb_list[5], fmt_osb_list_dflt[5])
+            self.enter_mfd_format("R", "13", fmt_osb_list[4], fmt_osb_list_dflt[4])
+            self.enter_mfd_format("R", "14", fmt_osb_list[3], fmt_osb_list_dflt[3])
+
+            self.enter_mfd_format("L", "12", fmt_osb_list[2], fmt_osb_list_dflt[2])
+            self.enter_mfd_format("L", "13", fmt_osb_list[1], fmt_osb_list_dflt[1])
+            self.enter_mfd_format("L", "14", fmt_osb_list[0], fmt_osb_list_dflt[0])
 
             if mode == "DGFT_D":
                 self.keyboard_key_with_delay(self.prefs.hotkey_dgft_cycle)
@@ -1044,6 +1047,18 @@ class ViperDriver(Driver):
                 self.keyboard_key_with_delay(self.prefs.hotkey_dgft_cycle)
             elif mode != "NAV":
                 self.icp_btn(mode)
+
+            # Set up should return us to NAV master mode. In that mode, select FCR and
+            # HSD formats, assuming they are defined and are not on OSB 14.
+            #
+            if mode == "NAV":
+                osb_index = ["14", "13", "12", "14", "13", "12"]
+                for i in range(len(fmt_osb_list)):
+                    if (osb_index[i] != "14") and ((fmt_osb_list[i] == "20") or (fmt_osb_list[i] == "7")):
+                        if i > 3:
+                            self.mfd_btn("R", osb_index[i])
+                        else:
+                            self.mfd_btn("L", osb_index[i])
 
     def enter_cmds_prog(self, type, prog, command_q=None, progress_q=None):
         if prog is not None:
@@ -1158,18 +1173,29 @@ class ViperDriver(Driver):
         if cmds_progs.count(None) == 6:
             cmds_progs = None
 
+        if avs_dict.get('f16_mfd_setup_opt'):
+            mfd_nav_dflt = avs_dict.get('f16_mfd_setup_nav_dflt')
+            mfd_a2a_dflt = avs_dict.get('f16_mfd_setup_air_dflt')
+            mfd_a2g_dflt = avs_dict.get('f16_mfd_setup_gnd_dflt')
+            mfd_dog_dflt = avs_dict.get('f16_mfd_setup_dog_dflt')
+        else:
+            mfd_nav_dflt = "0,0,0,0,0,0"
+            mfd_a2a_dflt = "0,0,0,0,0,0"
+            mfd_a2g_dflt = "0,0,0,0,0,0"
+            mfd_dog_dflt = "0,0,0,0,0,0"
+
         try:
             self.enter_waypoints(waypoints, command_q=command_q, progress_q=progress_q)
             self.enter_tacan(avs_dict.get('tacan_yard'), command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("NAV", avs_dict.get('f16_mfd_setup_nav'),
+            self.enter_mfd("NAV", avs_dict.get('f16_mfd_setup_nav'), mfd_nav_dflt,
                            command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("AA_MODE", avs_dict.get('f16_mfd_setup_air'),
+            self.enter_mfd("AA_MODE", avs_dict.get('f16_mfd_setup_air'), mfd_a2a_dflt,
                            command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("AG_MODE", avs_dict.get('f16_mfd_setup_gnd'),
+            self.enter_mfd("AG_MODE", avs_dict.get('f16_mfd_setup_gnd'), mfd_a2g_dflt,
                            command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("DGFT_D", avs_dict.get('f16_mfd_setup_dog'),
+            self.enter_mfd("DGFT_D", avs_dict.get('f16_mfd_setup_dog'), mfd_dog_dflt,
                            command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("DGFT_M", avs_dict.get('f16_mfd_setup_air'),
+            self.enter_mfd("DGFT_M", avs_dict.get('f16_mfd_setup_air'), mfd_dog_dflt,
                            command_q=command_q, progress_q=progress_q)
             self.enter_cmds(cmds_progs, command_q=command_q, progress_q=progress_q)
             self.enter_bulls(bulls_setup, command_q=command_q, progress_q=progress_q)

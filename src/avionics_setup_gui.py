@@ -243,7 +243,9 @@ class AvionicsSetupGUI:
                                     " Dogfight MSL Override Mode (DGFT MSL OVRD)",
                                     layout_air, pad=(12,6))],
                        [PyGUI.Frame("Dogfight Override Mode (DGFT DOGFIGHT)",
-                                    layout_dog, pad=(12,(6,12)))]])
+                                    layout_dog, pad=(12,(6,12)))],
+                       [PyGUI.Checkbox("Only set MFD formats when they differ from the default format assignments (reduces setup time)",
+                                       key='ux_mfd_force', enable_events=True, size=(72,1), pad=(10,(0,12)))]])
         ]
 
         # ---- TACAN
@@ -666,11 +668,13 @@ class AvionicsSetupGUI:
             self.set_gui_mfd_row('ux_air', self.dbase_setup.f16_mfd_setup_air)
             self.set_gui_mfd_row('ux_gnd', self.dbase_setup.f16_mfd_setup_gnd)
             self.set_gui_mfd_row('ux_dog', self.dbase_setup.f16_mfd_setup_dog)
+            self.window['ux_mfd_force'].update(value=self.dbase_setup.f16_mfd_setup_opt)
         else:
             self.set_gui_mfd_row('ux_nav', None)
             self.set_gui_mfd_row('ux_air', None)
             self.set_gui_mfd_row('ux_gnd', None)
             self.set_gui_mfd_row('ux_dog', None)
+            self.window['ux_mfd_force'].update(value=False)
         self.is_dirty = False
     
     def copy_f16_mfd_ui_to_dbase(self, db_save=True):
@@ -679,6 +683,7 @@ class AvionicsSetupGUI:
             self.dbase_setup.f16_mfd_setup_air = self.get_gui_mfd_row('ux_air')
             self.dbase_setup.f16_mfd_setup_gnd = self.get_gui_mfd_row('ux_gnd')
             self.dbase_setup.f16_mfd_setup_dog = self.get_gui_mfd_row('ux_dog')
+            self.dbase_setup.f16_mfd_setup_opt = self.values['ux_mfd_force']
             if db_save:
                 try:
                     self.dbase_setup.save()
@@ -791,6 +796,9 @@ class AvionicsSetupGUI:
         self.is_dirty = True
         fields = event.split("_")
         self.update_gui_unique_mfd_row(event, f"{fields[0]}_{fields[1]}")
+
+    def do_mfd_force(self, event):
+        self.is_dirty = True
 
     def do_tacan_dirty(self, event):
         self.is_dirty = True
@@ -1000,6 +1008,7 @@ class AvionicsSetupGUI:
                         'ux_dog_r14' : self.do_mfd_osb_combo,
                         'ux_dog_r13' : self.do_mfd_osb_combo,
                         'ux_dog_r12' : self.do_mfd_osb_combo,
+                        'ux_mfd_force' : self.do_mfd_force,
                         'ux_tacan_ckbx' : self.do_tacan_dirty,
                         'ux_tacan_chan' : self.do_tacan_chan,
                         'ux_tacan_xy_select' : self.do_tacan_dirty,
