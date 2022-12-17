@@ -45,19 +45,18 @@ class AvionicsSetupGUI:
         else:
             self.cur_av_setup = "DCS Default"
 
-        self.window = self.create_gui(airframe, self.dbase_setup)
-        self.airframe_gui.af_assign_window(self.window)
+        self.window = self.create_gui(airframe)
 
     def is_setup_default(self):
         if self.values.get('ux_tmplt_select') == "DCS Default":
             return True
         return False
 
-    def create_gui(self, airframe="viper", dbase_setup=None):
+    def create_gui(self, airframe="viper"):
         airframe_ui = airframe_type_to_ui_text(airframe)
 
         if airframe == "viper":
-            self.airframe_gui = AvionicsSetupViperGUI(dbase_setup)
+            self.airframe_gui = AvionicsSetupViperGUI(self)
 
         # ---- Core Airframe TabGroup
 
@@ -164,11 +163,9 @@ class AvionicsSetupGUI:
 
         try:
             event, self.values = self.window.read(timeout=0)
-            self.airframe_gui.af_assign_window_values(self.values)
             self.airframe_gui.af_copy_dbase_to_ui()
 
             event, self.values = self.window.read(timeout=0)
-            self.airframe_gui.af_assign_window_values(self.values)
             self.airframe_gui.af_update_gui()
     
             self.update_gui_template_list()
@@ -194,7 +191,6 @@ class AvionicsSetupGUI:
                 self.logger.debug(f"AVS Values: {new_values}")
             if new_values is not None:
                 self.values = new_values
-                self.airframe_gui.af_assign_window_values(self.values)
             event = new_event
 
             if event != 'ux_done' and \

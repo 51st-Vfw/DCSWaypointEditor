@@ -80,12 +80,17 @@ cmds_prog_default_map = { 'MAN 1'  : "1,0.020,10,1.00;1,0.020,10,1.00",
 }
 
 
+# return the default cmds programs
+#
+def cmds_default_progs():
+    return cmds_prog_default_map
+
+
 class AvionicsSetupViperGUI:
 
-    def __init__(self, dbase_setup=None):
+    def __init__(self, base_gui=None):
         self.logger = get_logger(__name__)
-        self.dbase_setup = dbase_setup
-        self.values = None
+        self.base_gui = base_gui
         self.cur_cmds_prog_sel = "MAN 1"
         self.cur_cmds_prog_map = { }
 
@@ -380,81 +385,71 @@ class AvionicsSetupViperGUI:
                                layout_cmds_tab,
                                layout_misc_tab], pad=(8,8))
 
-    # set the airframe-specific ui to use the indicated window.
-    #
-    def af_assign_window(self, wnd):
-        self.window = wnd
-
-    # set the airframe-specific ui to use the indicated window.
-    #
-    def af_assign_window_values(self, val):
-        self.values = val
-
     # update the gui for the enable state of a MFD master mode
     #
     def update_gui_enable_mfd_row(self, key_base):
-        if self.values[f"{key_base}_ckbx"]:
+        if self.base_gui.values[f"{key_base}_ckbx"]:
             label_color = "#ffffff"
             for key_suffix in mfd_key_suffixes:
-                self.window[f"{key_base}{key_suffix}"].update(disabled=False)
+                self.base_gui.window[f"{key_base}{key_suffix}"].update(disabled=False)
         else:
             label_color = "#b8b8b8"
-            self.window[f"{key_base}_l14"].update(value="FCR", disabled=True)
+            self.base_gui.window[f"{key_base}_l14"].update(value="FCR", disabled=True)
             if key_base == 'ux_nav':
-                self.window[f"{key_base}_l13"].update(value="TEST", disabled=True)
-                self.window[f"{key_base}_l12"].update(value="DTE", disabled=True)
+                self.base_gui.window[f"{key_base}_l13"].update(value="TEST", disabled=True)
+                self.base_gui.window[f"{key_base}_l12"].update(value="DTE", disabled=True)
             elif key_base == 'ux_gnd' or key_base == 'ux_air':
-                self.window[f"{key_base}_l13"].update(value="FLCS", disabled=True)
-                self.window[f"{key_base}_l12"].update(value="TEST", disabled=True)
+                self.base_gui.window[f"{key_base}_l13"].update(value="FLCS", disabled=True)
+                self.base_gui.window[f"{key_base}_l12"].update(value="TEST", disabled=True)
             else:
-                self.window[f"{key_base}_l13"].update(value="", disabled=True)
-                self.window[f"{key_base}_l12"].update(value="", disabled=True)
-            self.window[f"{key_base}_r14"].update(value="SMS", disabled=True)
+                self.base_gui.window[f"{key_base}_l13"].update(value="", disabled=True)
+                self.base_gui.window[f"{key_base}_l12"].update(value="", disabled=True)
+            self.base_gui.window[f"{key_base}_r14"].update(value="SMS", disabled=True)
             if key_base == 'ux_dog':
-                self.window[f"{key_base}_r13"].update(value="", disabled=True)
+                self.base_gui.window[f"{key_base}_r13"].update(value="", disabled=True)
             else:
-                self.window[f"{key_base}_r13"].update(value="HSD", disabled=True)
-            self.window[f"{key_base}_r12"].update(value="", disabled=True)
+                self.base_gui.window[f"{key_base}_r13"].update(value="HSD", disabled=True)
+            self.base_gui.window[f"{key_base}_r12"].update(value="", disabled=True)
         for key_suffix in mfd_key_suffixes:
-            self.window[f"{key_base}_txt{key_suffix}"].update(text_color=label_color)
+            self.base_gui.window[f"{key_base}_txt{key_suffix}"].update(text_color=label_color)
 
     # update the gui to ensure a format appears only once in a master mode
     #
     def update_gui_unique_mfd_row(self, key, key_base):
-        value = self.values[key]
+        value = self.base_gui.values[key]
         for key_suffix in mfd_key_suffixes:
             row_key = f"{key_base}{key_suffix}"
-            if row_key != key and self.values[row_key] == value:
-                self.window[row_key].update(value="")
+            if row_key != key and self.base_gui.values[row_key] == value:
+                self.base_gui.window[row_key].update(value="")
 
     # update the gui for the enable state of the tacan
     #
     def update_gui_enable_tacan_row(self):
-        if self.values['ux_tacan_ckbx']:
+        if self.base_gui.values['ux_tacan_ckbx']:
             label_color = "#ffffff"
             input_color = "#000000"
-            chan = self.values['ux_tacan_chan']
-            if self.values['ux_tacan_lw_select'] == "Wingman":
+            chan = self.base_gui.values['ux_tacan_chan']
+            if self.base_gui.values['ux_tacan_lw_select'] == "Wingman":
                 chan = int(chan) + 63
-            xy = self.values['ux_tacan_xy_select']
+            xy = self.base_gui.values['ux_tacan_xy_select']
             summary_txt = f" (setup will program TACAN to {chan}{xy} A/A)"
-            self.window['ux_tacan_chan'].update(disabled=False, text_color=input_color)
-            self.window['ux_tacan_xy_select'].update(disabled=False, readonly=True)
-            self.window['ux_tacan_lw_select'].update(disabled=False, readonly=True)
+            self.base_gui.window['ux_tacan_chan'].update(disabled=False, text_color=input_color)
+            self.base_gui.window['ux_tacan_xy_select'].update(disabled=False, readonly=True)
+            self.base_gui.window['ux_tacan_lw_select'].update(disabled=False, readonly=True)
         else:
             label_color = "#b8b8b8"
             input_color = "#b8b8b8"
             summary_txt = ""
-            self.window['ux_tacan_chan'].update(disabled=True, text_color=input_color)
-            self.window['ux_tacan_xy_select'].update(disabled=True)
-            self.window['ux_tacan_lw_select'].update(disabled=True)
-        self.window['ux_tacan_role'].update(text_color=label_color)
-        self.window['ux_tacan_info'].update(summary_txt)
+            self.base_gui.window['ux_tacan_chan'].update(disabled=True, text_color=input_color)
+            self.base_gui.window['ux_tacan_xy_select'].update(disabled=True)
+            self.base_gui.window['ux_tacan_lw_select'].update(disabled=True)
+        self.base_gui.window['ux_tacan_role'].update(text_color=label_color)
+        self.base_gui.window['ux_tacan_info'].update(summary_txt)
 
     # update the gui for the enable state of the cmds
     #
     def update_gui_enable_cmds(self):
-        if self.values['ux_cmds_reconfig']:
+        if self.base_gui.values['ux_cmds_reconfig']:
             label_color = "#ffffff"
             input_color = "#000000"
             disabled = False
@@ -462,13 +457,12 @@ class AvionicsSetupViperGUI:
             label_color = "#b8b8b8"
             input_color = "#b8b8b8"
             disabled = True
-        updating = None
         for cmds_type in cmds_types:
             for cmds_param in cmds_params:
-                self.window[f"ux_cmds_{cmds_type}_{cmds_param}"].update(disabled=disabled,
-                                                                        text_color=input_color)
-                self.window[f"ux_cmds_{cmds_type}_{cmds_param}_t1"].update(text_color=label_color)
-                self.window[f"ux_cmds_{cmds_type}_{cmds_param}_t2"].update(text_color=label_color)
+                self.base_gui.window[f"ux_cmds_{cmds_type}_{cmds_param}"].update(disabled=disabled,
+                                                                                 text_color=input_color)
+                self.base_gui.window[f"ux_cmds_{cmds_type}_{cmds_param}_t1"].update(text_color=label_color)
+                self.base_gui.window[f"ux_cmds_{cmds_type}_{cmds_param}_t2"].update(text_color=label_color)
         prog_list = "None"
         for prog in [ 'MAN 1', 'MAN 2', 'MAN 3', 'MAN 4', 'Panic', 'Bypass']:
             if self.cur_cmds_prog_map[prog]:
@@ -476,7 +470,7 @@ class AvionicsSetupViperGUI:
                     prog_list = prog
                 else:
                     prog_list += f", {prog}"
-        self.window['ux_cmds_prog_update'].update(prog_list)
+        self.base_gui.window['ux_cmds_prog_update'].update(prog_list)
 
 
     # get/set mfd format row ui state
@@ -485,28 +479,28 @@ class AvionicsSetupViperGUI:
     # of the f16_mfd_setup_* fields in the database model).
     #
     def get_gui_mfd_row(self, key_base):
-        if self.values[f"{key_base}_ckbx"] == False:
+        if self.base_gui.values[f"{key_base}_ckbx"] == False:
             config = None
         else:
             osb_list = []
             for key_suffix in mfd_key_suffixes:
-                osb_list.append(mfd_format_map[self.values[f"{key_base}{key_suffix}"]])
+                osb_list.append(mfd_format_map[self.base_gui.values[f"{key_base}{key_suffix}"]])
             config = ','.join([str(item) for item in osb_list])
         return config
     
     def set_gui_mfd_row(self, key_base, value):
         if value is None:
-            self.window[f"{key_base}_ckbx"].update(value=False)
+            self.base_gui.window[f"{key_base}_ckbx"].update(value=False)
             osb_list = copy.copy(mfd_default_setup_map[key_base])
         else:
-            self.window[f"{key_base}_ckbx"].update(value=True)
+            self.base_gui.window[f"{key_base}_ckbx"].update(value=True)
             osb_list = [ int(osb) for osb in value.split(",") ]
         for key_suffix in mfd_key_suffixes:
             osb = osb_list.pop(0)
             hits = [k for k,v in mfd_format_map.items() if v == osb]
             if (len(hits) == 0):
                 hits = [""]
-            self.window[f"{key_base}{key_suffix}"].update(value=hits[0])
+            self.base_gui.window[f"{key_base}{key_suffix}"].update(value=hits[0])
 
     # get/set cmds program state
     #
@@ -542,13 +536,13 @@ class AvionicsSetupViperGUI:
                                 'bi' : self.get_gui_cmds_prog_field_bint,
                                 'sq' : self.get_gui_cmds_prog_field_quant,
                                 'si' : self.get_gui_cmds_prog_field_sint }
-        if self.values['ux_cmds_reconfig'] == True:
+        if self.base_gui.values['ux_cmds_reconfig'] == True:
             value = ""
             sep = ""
             for cmds_type in cmds_types:
                 for cmds_param in cmds_params:
                     value += sep
-                    field = self.values[f'ux_cmds_{cmds_type}_{cmds_param}']
+                    field = self.base_gui.values[f'ux_cmds_{cmds_type}_{cmds_param}']
                     value += cmds_params_val_map[cmds_param](field)
                     sep = ","
                 sep = ";"
@@ -558,70 +552,70 @@ class AvionicsSetupViperGUI:
     
     def set_gui_cmds_prog(self, value):
         if value is None:
-            self.window['ux_cmds_reconfig'].update(value=False)
-            self.values['ux_cmds_reconfig'] = False
+            self.base_gui.window['ux_cmds_reconfig'].update(value=False)
+            self.base_gui.values['ux_cmds_reconfig'] = False
             for cmds_type in cmds_types:
                 for cmds_param in cmds_params:
-                    self.window[f"ux_cmds_{cmds_type}_{cmds_param}"].update("")
+                    self.base_gui.window[f"ux_cmds_{cmds_type}_{cmds_param}"].update("")
         else:
-            self.window['ux_cmds_reconfig'].update(value=True)
-            self.values['ux_cmds_reconfig'] = True
+            self.base_gui.window['ux_cmds_reconfig'].update(value=True)
+            self.base_gui.values['ux_cmds_reconfig'] = True
             types = value.split(";")
             c_params = types[0].split(",")
             f_params = types[1].split(",")
 
-            self.window['ux_cmds_c_bq'].update(f"{int(c_params[0]):#d}")
-            self.window['ux_cmds_c_bi'].update(f"{float(c_params[1]):#0.3f}")
-            self.window['ux_cmds_c_sq'].update(f"{int(c_params[2]):#d}")
-            self.window['ux_cmds_c_si'].update(f"{float(c_params[3]):#0.2f}")
+            self.base_gui.window['ux_cmds_c_bq'].update(f"{int(c_params[0]):#d}")
+            self.base_gui.window['ux_cmds_c_bi'].update(f"{float(c_params[1]):#0.3f}")
+            self.base_gui.window['ux_cmds_c_sq'].update(f"{int(c_params[2]):#d}")
+            self.base_gui.window['ux_cmds_c_si'].update(f"{float(c_params[3]):#0.2f}")
 
-            self.window['ux_cmds_f_bq'].update(f"{int(f_params[0]):#d}")
-            self.window['ux_cmds_f_bi'].update(f"{float(f_params[1]):#0.3f}")
-            self.window['ux_cmds_f_sq'].update(f"{int(f_params[2]):#d}")
-            self.window['ux_cmds_f_si'].update(f"{float(f_params[3]):#0.2f}")
+            self.base_gui.window['ux_cmds_f_bq'].update(f"{int(f_params[0]):#d}")
+            self.base_gui.window['ux_cmds_f_bi'].update(f"{float(f_params[1]):#0.3f}")
+            self.base_gui.window['ux_cmds_f_sq'].update(f"{int(f_params[2]):#d}")
+            self.base_gui.window['ux_cmds_f_si'].update(f"{float(f_params[3]):#0.2f}")
         self.update_gui_enable_cmds()
         
 
     # synchronize TACAN setup UI and database
     #
     def copy_tacan_dbase_to_ui(self):
-        if self.dbase_setup is not None:
-            if self.dbase_setup.tacan_yard is None:
-                self.window['ux_tacan_ckbx'].update(value=False)
-                self.window['ux_tacan_chan'].update("1")
+        if self.base_gui.dbase_setup is not None:
+            if self.base_gui.dbase_setup.tacan_yard is None:
+                self.base_gui.window['ux_tacan_ckbx'].update(value=False)
+                self.base_gui.window['ux_tacan_chan'].update("1")
             else:
-                fields = [ str(field) for field in self.dbase_setup.tacan_yard.split(",") ]
+                fields = [ str(field) for field in self.base_gui.dbase_setup.tacan_yard.split(",") ]
                 if fields[2] == "L":
                     role_index = 0
                 else:
                     role_index = 1
-                self.window['ux_tacan_ckbx'].update(value=True)
-                self.window['ux_tacan_chan'].update(fields[0])
-                self.window['ux_tacan_xy_select'].update(value=fields[1])
-                self.window['ux_tacan_lw_select'].update(set_to_index=role_index)
+                self.base_gui.window['ux_tacan_ckbx'].update(value=True)
+                self.base_gui.window['ux_tacan_chan'].update(fields[0])
+                self.base_gui.window['ux_tacan_xy_select'].update(value=fields[1])
+                self.base_gui.window['ux_tacan_lw_select'].update(set_to_index=role_index)
         else:
-            self.window['ux_tacan_ckbx'].update(value=False)
-            self.window['ux_tacan_chan'].update("1")
-            self.window['ux_tacan_xy_select'].update(value="X")
-            self.window['ux_tacan_lw_select'].update(value="Flight Lead")
+            self.base_gui.window['ux_tacan_ckbx'].update(value=False)
+            self.base_gui.window['ux_tacan_chan'].update("1")
+            self.base_gui.window['ux_tacan_xy_select'].update(value="X")
+            self.base_gui.window['ux_tacan_lw_select'].update(value="Flight Lead")
         self.is_dirty = False
 
     def copy_tacan_ui_to_dbase(self, db_save=True):
-        if self.dbase_setup is not None:
-            if self.values['ux_tacan_ckbx'] == False:
+        if self.base_gui.dbase_setup is not None:
+            if self.base_gui.values['ux_tacan_ckbx'] == False:
                 tacan_yard = None
             else:
-                chan = int(self.values['ux_tacan_chan'])
-                xy = self.values['ux_tacan_xy_select']
-                if self.values['ux_tacan_lw_select'] == "Flight Lead":
+                chan = int(self.base_gui.values['ux_tacan_chan'])
+                xy = self.base_gui.values['ux_tacan_xy_select']
+                if self.base_gui.values['ux_tacan_lw_select'] == "Flight Lead":
                     lw = "L"
                 else:
                     lw = "W"
                 tacan_yard = f"{chan},{xy},{lw}"
-            self.dbase_setup.tacan_yard = tacan_yard
+            self.base_gui.dbase_setup.tacan_yard = tacan_yard
             if db_save:
                 try:
-                    self.dbase_setup.save()
+                    self.base_gui.dbase_setup.save()
                 except:
                     PyGUI.PopupError("Unable to save TACAN yardstick information to database?")
             self.is_dirty = False
@@ -629,30 +623,30 @@ class AvionicsSetupViperGUI:
     # synchronize F-16 MFD setup UI and database
     #
     def copy_f16_mfd_dbase_to_ui(self):
-        if self.dbase_setup is not None:
-            self.set_gui_mfd_row('ux_nav', self.dbase_setup.f16_mfd_setup_nav)
-            self.set_gui_mfd_row('ux_air', self.dbase_setup.f16_mfd_setup_air)
-            self.set_gui_mfd_row('ux_gnd', self.dbase_setup.f16_mfd_setup_gnd)
-            self.set_gui_mfd_row('ux_dog', self.dbase_setup.f16_mfd_setup_dog)
-            self.window['ux_mfd_force'].update(value=self.dbase_setup.f16_mfd_setup_opt)
+        if self.base_gui.dbase_setup is not None:
+            self.set_gui_mfd_row('ux_nav', self.base_gui.dbase_setup.f16_mfd_setup_nav)
+            self.set_gui_mfd_row('ux_air', self.base_gui.dbase_setup.f16_mfd_setup_air)
+            self.set_gui_mfd_row('ux_gnd', self.base_gui.dbase_setup.f16_mfd_setup_gnd)
+            self.set_gui_mfd_row('ux_dog', self.base_gui.dbase_setup.f16_mfd_setup_dog)
+            self.base_gui.window['ux_mfd_force'].update(value=self.base_gui.dbase_setup.f16_mfd_setup_opt)
         else:
             self.set_gui_mfd_row('ux_nav', None)
             self.set_gui_mfd_row('ux_air', None)
             self.set_gui_mfd_row('ux_gnd', None)
             self.set_gui_mfd_row('ux_dog', None)
-            self.window['ux_mfd_force'].update(value=False)
+            self.base_gui.window['ux_mfd_force'].update(value=False)
         self.is_dirty = False
     
     def copy_f16_mfd_ui_to_dbase(self, db_save=True):
-        if self.dbase_setup is not None:
-            self.dbase_setup.f16_mfd_setup_nav = self.get_gui_mfd_row('ux_nav')
-            self.dbase_setup.f16_mfd_setup_air = self.get_gui_mfd_row('ux_air')
-            self.dbase_setup.f16_mfd_setup_gnd = self.get_gui_mfd_row('ux_gnd')
-            self.dbase_setup.f16_mfd_setup_dog = self.get_gui_mfd_row('ux_dog')
-            self.dbase_setup.f16_mfd_setup_opt = self.values['ux_mfd_force']
+        if self.base_gui.dbase_setup is not None:
+            self.base_gui.dbase_setup.f16_mfd_setup_nav = self.get_gui_mfd_row('ux_nav')
+            self.base_gui.dbase_setup.f16_mfd_setup_air = self.get_gui_mfd_row('ux_air')
+            self.base_gui.dbase_setup.f16_mfd_setup_gnd = self.get_gui_mfd_row('ux_gnd')
+            self.base_gui.dbase_setup.f16_mfd_setup_dog = self.get_gui_mfd_row('ux_dog')
+            self.base_gui.dbase_setup.f16_mfd_setup_opt = self.base_gui.values['ux_mfd_force']
             if db_save:
                 try:
-                    self.dbase_setup.save()
+                    self.base_gui.dbase_setup.save()
                 except:
                     PyGUI.PopupError("Unable to save MFD setup information to database?")
             self.is_dirty = False
@@ -662,14 +656,14 @@ class AvionicsSetupViperGUI:
     #
     def copy_f16_cmds_dbase_to_ui(self, cur_prog=None):
         if cur_prog is None:
-            cur_prog = self.values['ux_cmds_prog_sel']
-        if self.dbase_setup is not None:
-            self.cur_cmds_prog_map['MAN 1'] = self.dbase_setup.f16_cmds_setup_p1
-            self.cur_cmds_prog_map['MAN 2'] = self.dbase_setup.f16_cmds_setup_p2
-            self.cur_cmds_prog_map['MAN 3'] = self.dbase_setup.f16_cmds_setup_p3
-            self.cur_cmds_prog_map['MAN 4'] = self.dbase_setup.f16_cmds_setup_p4
-            self.cur_cmds_prog_map['Panic'] = self.dbase_setup.f16_cmds_setup_p5
-            self.cur_cmds_prog_map['Bypass'] = self.dbase_setup.f16_cmds_setup_p6
+            cur_prog = self.base_gui.values['ux_cmds_prog_sel']
+        if self.base_gui.dbase_setup is not None:
+            self.cur_cmds_prog_map['MAN 1'] = self.base_gui.dbase_setup.f16_cmds_setup_p1
+            self.cur_cmds_prog_map['MAN 2'] = self.base_gui.dbase_setup.f16_cmds_setup_p2
+            self.cur_cmds_prog_map['MAN 3'] = self.base_gui.dbase_setup.f16_cmds_setup_p3
+            self.cur_cmds_prog_map['MAN 4'] = self.base_gui.dbase_setup.f16_cmds_setup_p4
+            self.cur_cmds_prog_map['Panic'] = self.base_gui.dbase_setup.f16_cmds_setup_p5
+            self.cur_cmds_prog_map['Bypass'] = self.base_gui.dbase_setup.f16_cmds_setup_p6
         else:
             self.cur_cmds_prog_map['MAN 1'] = None
             self.cur_cmds_prog_map['MAN 2'] = None
@@ -682,18 +676,18 @@ class AvionicsSetupViperGUI:
     
     def copy_f16_cmds_ui_to_dbase(self, cur_prog=None, db_save=True):
         if cur_prog is None:
-            cur_prog = self.values['ux_cmds_prog_sel']
+            cur_prog = self.base_gui.values['ux_cmds_prog_sel']
         self.cur_cmds_prog_map[cur_prog] = self.get_gui_cmds_prog()
-        if self.dbase_setup is not None:
-            self.dbase_setup.f16_cmds_setup_p1 = self.cur_cmds_prog_map['MAN 1']
-            self.dbase_setup.f16_cmds_setup_p2 = self.cur_cmds_prog_map['MAN 2']
-            self.dbase_setup.f16_cmds_setup_p3 = self.cur_cmds_prog_map['MAN 3']
-            self.dbase_setup.f16_cmds_setup_p4 = self.cur_cmds_prog_map['MAN 4']
-            self.dbase_setup.f16_cmds_setup_p5 = self.cur_cmds_prog_map['Panic']
-            self.dbase_setup.f16_cmds_setup_p6 = self.cur_cmds_prog_map['Bypass']
+        if self.base_gui.dbase_setup is not None:
+            self.base_gui.dbase_setup.f16_cmds_setup_p1 = self.cur_cmds_prog_map['MAN 1']
+            self.base_gui.dbase_setup.f16_cmds_setup_p2 = self.cur_cmds_prog_map['MAN 2']
+            self.base_gui.dbase_setup.f16_cmds_setup_p3 = self.cur_cmds_prog_map['MAN 3']
+            self.base_gui.dbase_setup.f16_cmds_setup_p4 = self.cur_cmds_prog_map['MAN 4']
+            self.base_gui.dbase_setup.f16_cmds_setup_p5 = self.cur_cmds_prog_map['Panic']
+            self.base_gui.dbase_setup.f16_cmds_setup_p6 = self.cur_cmds_prog_map['Bypass']
             if db_save:
                 try:
-                    self.dbase_setup.save()
+                    self.base_gui.dbase_setup.save()
                 except:
                     PyGUI.PopupError("Unable to save CMDS setup information to database?")
             self.copy_f16_cmds_dbase_to_ui()
@@ -702,50 +696,50 @@ class AvionicsSetupViperGUI:
     # synchronize F-16 Miscellaneous setup UI and database
     #
     def copy_f16_misc_dbase_to_ui(self):
-        if self.dbase_setup is not None:
-            if self.dbase_setup.f16_bulls_setup is None:
-                self.window['ux_bulls_select'].update(set_to_index=0)
+        if self.base_gui.dbase_setup is not None:
+            if self.base_gui.dbase_setup.f16_bulls_setup is None:
+                self.base_gui.window['ux_bulls_select'].update(set_to_index=0)
             else:
-                self.window['ux_bulls_select'].update(set_to_index=self.dbase_setup.f16_bulls_setup)
-            if self.dbase_setup.f16_jhmcs_setup is None:
-                self.window['ux_jhmcs_hud'].update(value=True)
-                self.window['ux_jhmcs_pit'].update(value=True)
-                self.window['ux_jhmcs_rwr'].update(value=True)
-                self.window['ux_jhmcs_dc_select'].update(set_to_index=0)
+                self.base_gui.window['ux_bulls_select'].update(set_to_index=self.base_gui.dbase_setup.f16_bulls_setup)
+            if self.base_gui.dbase_setup.f16_jhmcs_setup is None:
+                self.base_gui.window['ux_jhmcs_hud'].update(value=True)
+                self.base_gui.window['ux_jhmcs_pit'].update(value=True)
+                self.base_gui.window['ux_jhmcs_rwr'].update(value=True)
+                self.base_gui.window['ux_jhmcs_dc_select'].update(set_to_index=0)
             else:
-                fields = [ int(field) for field in self.dbase_setup.f16_jhmcs_setup.split(",") ]
-                self.window['ux_jhmcs_hud'].update(value=bool(fields[0]))
-                self.window['ux_jhmcs_pit'].update(value=bool(fields[1]))
-                self.window['ux_jhmcs_rwr'].update(value=bool(fields[2]))
-                self.window['ux_jhmcs_dc_select'].update(set_to_index=fields[3])
+                fields = [ int(field) for field in self.base_gui.dbase_setup.f16_jhmcs_setup.split(",") ]
+                self.base_gui.window['ux_jhmcs_hud'].update(value=bool(fields[0]))
+                self.base_gui.window['ux_jhmcs_pit'].update(value=bool(fields[1]))
+                self.base_gui.window['ux_jhmcs_rwr'].update(value=bool(fields[2]))
+                self.base_gui.window['ux_jhmcs_dc_select'].update(set_to_index=fields[3])
         else:
-            self.window['ux_bulls_select'].update(set_to_index=0)
-            self.window['ux_jhmcs_hud'].update(value=True)
-            self.window['ux_jhmcs_pit'].update(value=True)
-            self.window['ux_jhmcs_rwr'].update(value=True)
-            self.window['ux_jhmcs_dc_select'].update(set_to_index=0)
+            self.base_gui.window['ux_bulls_select'].update(set_to_index=0)
+            self.base_gui.window['ux_jhmcs_hud'].update(value=True)
+            self.base_gui.window['ux_jhmcs_pit'].update(value=True)
+            self.base_gui.window['ux_jhmcs_rwr'].update(value=True)
+            self.base_gui.window['ux_jhmcs_dc_select'].update(set_to_index=0)
         self.is_dirty = False
 
     def copy_f16_misc_ui_to_dbase(self, db_save=True):
-        if self.dbase_setup is not None:
-            if self.values['ux_bulls_select'] == "Ownship Bullseye":
-                self.dbase_setup.f16_bulls_setup = "1"
+        if self.base_gui.dbase_setup is not None:
+            if self.base_gui.values['ux_bulls_select'] == "Ownship Bullseye":
+                self.base_gui.dbase_setup.f16_bulls_setup = "1"
             else:
-                self.dbase_setup.f16_bulls_setup = None
+                self.base_gui.dbase_setup.f16_bulls_setup = None
 
-            hud = int(self.values['ux_jhmcs_hud'])
-            pit = int(self.values['ux_jhmcs_pit'])
-            rwr = int(self.values['ux_jhmcs_rwr'])
-            dcs = jhmcs_dc_setup_map[self.values['ux_jhmcs_dc_select']]
+            hud = int(self.base_gui.values['ux_jhmcs_hud'])
+            pit = int(self.base_gui.values['ux_jhmcs_pit'])
+            rwr = int(self.base_gui.values['ux_jhmcs_rwr'])
+            dcs = jhmcs_dc_setup_map[self.base_gui.values['ux_jhmcs_dc_select']]
             jhmcs_setup = f"{hud},{pit},{rwr},{dcs}"
             if jhmcs_setup != "1,1,1,0":
-                self.dbase_setup.f16_jhmcs_setup = jhmcs_setup
+                self.base_gui.dbase_setup.f16_jhmcs_setup = jhmcs_setup
             else:
-                self.dbase_setup.f16_jhmcs_setup = None
+                self.base_gui.dbase_setup.f16_jhmcs_setup = None
 
             if db_save:
                 try:
-                    self.dbase_setup.save()
+                    self.base_gui.dbase_setup.save()
                 except:
                     PyGUI.PopupError("Unable to save miscellaneous information to database?")
             self.is_dirty = False
@@ -770,20 +764,20 @@ class AvionicsSetupViperGUI:
         self.is_dirty = True
 
     def do_tacan_chan(self, event):
-        if self.values[event]:
+        if self.base_gui.values[event]:
             try:
-                input_as_int = int(self.values[event])
+                input_as_int = int(self.base_gui.values[event])
                 if input_as_int < 1 or input_as_int > 63:
                     raise ValueError("Out of bounds")
                 self.is_dirty = True
             except:
                 PyGUI.Popup("The TACAN channel must be between 1 and 63 for use as a yardstick.",
                             title="Invalid Channel")
-                self.window[event].update(self.values[event][:-1])
+                self.base_gui.window[event].update(self.base_gui.values[event][:-1])
 
     def do_cmds_reconfig(self, event):
-        cur_prog = self.values['ux_cmds_prog_sel']
-        if self.values[event] == True:
+        cur_prog = self.base_gui.values['ux_cmds_prog_sel']
+        if self.base_gui.values[event] == True:
             program = cmds_prog_default_map[cur_prog]
         else:
             program = None
@@ -793,29 +787,29 @@ class AvionicsSetupViperGUI:
     
     def do_cmds_prog_select(self, event):
         self.cur_cmds_prog_map[self.cur_cmds_prog_sel] = self.get_gui_cmds_prog()
-        self.cur_cmds_prog_sel = self.values[event]
+        self.cur_cmds_prog_sel = self.base_gui.values[event]
         self.set_gui_cmds_prog(self.cur_cmds_prog_map[self.cur_cmds_prog_sel])
 
     def do_cmds_prog_field_quantity(self, event):
-        if self.values[event]:
-            if self.val_cmds_prog_field_quantity(self.values[event]):
+        if self.base_gui.values[event]:
+            if self.val_cmds_prog_field_quantity(self.base_gui.values[event]):
                 self.is_dirty = True
             else:
-                self.window[event].update(self.values[event][:-1])
+                self.base_gui.window[event].update(self.base_gui.values[event][:-1])
 
     def do_cmds_prog_field_bint(self, event):
-        if self.values[event]:
-            if self.val_cmds_prog_field_bint(self.values[event]):
+        if self.base_gui.values[event]:
+            if self.val_cmds_prog_field_bint(self.base_gui.values[event]):
                 self.is_dirty = True
             else:
-                self.window[event].update(self.values[event][:-1])
+                self.base_gui.window[event].update(self.base_gui.values[event][:-1])
 
     def do_cmds_prog_field_sint(self, event):
-        if self.values[event]:
-            if self.val_cmds_prog_field_sint(self.values[event]):
+        if self.base_gui.values[event]:
+            if self.val_cmds_prog_field_sint(self.base_gui.values[event]):
                 self.is_dirty = True
             else:
-                self.window[event].update(self.values[event][:-1])
+                self.base_gui.window[event].update(self.base_gui.values[event][:-1])
 
     def do_misc_dirty(self, event):
         self.is_dirty = True
@@ -862,10 +856,10 @@ class AvionicsSetupViperGUI:
     # dirty templates.
     #
     def af_do_template_select(self, event, dbase):
-        self.dbase_setup = dbase
+        self.base_gui.dbase_setup = dbase
 
         self.cur_cmds_prog_sel = 'MAN 1'
-        self.window['ux_cmds_prog_sel'].update(value=self.cur_cmds_prog_sel)
+        self.base_gui.window['ux_cmds_prog_sel'].update(value=self.cur_cmds_prog_sel)
 
         self.copy_f16_cmds_dbase_to_ui()
         self.copy_f16_mfd_dbase_to_ui()
@@ -873,10 +867,10 @@ class AvionicsSetupViperGUI:
         self.copy_tacan_dbase_to_ui()
 
     # airframe-specific template save as handler. the core avionics setup code will determine the name to save as
-    # and wrap the clal in a try/except block to catch failures.
+    # and wrap the call in a try/except block to catch failures.
     #
     def af_do_template_save_as(self, event, name):
-        self.dbase_setup = AvionicsSetupModel.create(name=name)
+        self.base_gui.dbase_setup = AvionicsSetupModel.create(name=name)
         self.copy_f16_cmds_ui_to_dbase(db_save=False)
         self.copy_f16_mfd_ui_to_dbase(db_save=False)
         self.copy_f16_misc_ui_to_dbase(db_save=False)
@@ -895,11 +889,11 @@ class AvionicsSetupViperGUI:
     # method and will wrap the call in a try/except block to catch failures.
     #
     def af_do_template_delete(self, event):
-        self.dbase_setup.delete_instance()
-        self.dbase_setup = None
+        self.base_gui.dbase_setup.delete_instance()
+        self.base_gui.dbase_setup = None
         self.is_dirty = False
         self.cur_cmds_prog_sel = 'MAN 1'
-        self.window['ux_cmds_prog_sel'].update(value=self.cur_cmds_prog_sel)
+        self.base_gui.window['ux_cmds_prog_sel'].update(value=self.cur_cmds_prog_sel)
         self.copy_f16_cmds_dbase_to_ui()
         self.copy_f16_mfd_dbase_to_ui()
         self.copy_f16_misc_dbase_to_ui()
