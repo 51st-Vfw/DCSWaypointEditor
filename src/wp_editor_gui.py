@@ -171,6 +171,22 @@ class WaypointEditorGUI:
         else:
             return Profile.from_string(str)
 
+    def import_profile_commit(self, def_name, tmp_profile):
+        name = self.prompt_profile_name("Saving New Profile", def_name, allow_blank=True)
+        if name is not None:
+            self.profile = tmp_profile
+            self.profile.profilename = name
+            if self.profile.aircraft is None:
+                self.profile.aircraft = self.editor.prefs.airframe_default
+            self.is_profile_dirty = True
+            if name != "":
+                self.save_profile(name)
+                self.update_for_profile_change()
+            else:
+                self.window['ux_prof_select'].update(set_to_index=0)
+                self.update_for_profile_change(set_to_first=True)
+            self.logger.debug(self.profile.to_dict())
+
     def approve_profile_change(self, action="Switching the"):
         if self.is_profile_dirty:
             action = PyGUI.PopupOKCancel(f"You have unsaved changes to the current profile." +
@@ -585,14 +601,14 @@ class WaypointEditorGUI:
         
         submenu_import = tk.Menu(self.tk_menu_profile, tearoff=False)
         self.tk_menu_profile.add_cascade(label="Import", menu=submenu_import, underline=0)
-        submenu_import.add_command(label="From Clipboard",
+        submenu_import.add_command(label="From Clipboard (DCSWE Encoded)",
                                    command=self.menu_profile_import_from_encoded_string)
         submenu_import.add_command(label="From File...",
                                    command=self.menu_profile_import_from_file)
 
         submenu_export = tk.Menu(self.tk_menu_profile, tearoff=False)
         self.tk_menu_profile.add_cascade(label="Export", menu=submenu_export, underline=0)
-        submenu_export.add_command(label="To Clipboard (Encoded)",
+        submenu_export.add_command(label="To Clipboard (DCSWE Encoded)",
                                    command=self.menu_profile_export_to_enc_string, state=has_wypt_norm)
         submenu_export.add_command(label="To Clipboard (Text)",
                                    command=self.menu_profile_export_to_pln_string, state=has_wypt_norm)
@@ -928,20 +944,7 @@ class WaypointEditorGUI:
                 def_name = tmp_profile.profilename
                 if def_name == "":
                     def_name = "New Profile"
-                name = self.prompt_profile_name("Saving New Profile", def_name, allow_blank=True)
-                if name is not None:
-                    self.profile = tmp_profile
-                    self.profile.profilename = name
-                    if self.profile.aircraft is None:
-                        self.profile.aircraft = self.editor.prefs.airframe_default
-                    self.is_profile_dirty = True
-                    if name != "":
-                        self.save_profile(name)
-                        self.update_for_profile_change()
-                    else:
-                        self.window['ux_prof_select'].update(set_to_index=0)
-                        self.update_for_profile_change(set_to_first=True)
-                    self.logger.debug(self.profile.to_dict())
+                self.import_profile_commit(def_name, tmp_profile)
             except Exception as e:
                 PyGUI.Popup("Failed to parse encoded DCSWE profile from clipboard.",
                             title="Import Fails")
@@ -965,26 +968,12 @@ class WaypointEditorGUI:
                     if def_name == "":
                         file = os.path.split(filename)[1]
                         def_name = os.path.splitext(file)[0]
-                    name = self.prompt_profile_name("Saving New Profile", def_name, allow_blank=True)
-                    if name is not None:
-                        self.profile = tmp_profile
-                        self.profile.profilename = name
-                        if self.profile.aircraft is None:
-                            self.profile.aircraft = self.editor.prefs.airframe_default
-                        self.is_profile_dirty = True
-                        if name != "":
-                            self.save_profile(name)
-                            self.update_for_profile_change()
-                        else:
-                            self.window['ux_prof_select'].update(set_to_index=0)
-                            self.update_for_profile_change(set_to_first=True)
-                        self.logger.debug(self.profile.to_dict())
+                    self.import_profile_commit(def_name, tmp_profile)
                 except:
                     file = os.path.split(filename)[1]
                     PyGUI.Popup(f"Failed to parse the file '{file}' for import.", title="Import Fails")
             elif filename is not None and len(filename) == 0:
-                    PyGUI.Popup(f"There was no file specified to import.",
-                                title="Import Fails")
+                    PyGUI.Popup(f"There was no file specified to import.", title="Import Fails")
 
 
     def do_menu_mission_install_package(self):
