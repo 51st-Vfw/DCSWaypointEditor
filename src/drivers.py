@@ -20,13 +20,15 @@
 *
 '''
 
-import types
 import keyboard
 import re
 import socket
 import queue
 
 from time import sleep
+
+from src.avionics_setup_viper_gui import cmds_default_progs
+
 
 
 class DriverException(Exception):
@@ -838,6 +840,7 @@ class ViperDriver(Driver):
         self.push_btn(f"MFD_{lr}_{num}", delay_after=delay_after, delay_release=delay_release)
 
     def icp_btn(self, num, delay_after=None, delay_release=None):
+        # print(f"icp_btn {num}")
         key = f"ICP_BTN_{num}"
         if num == "ENTR":
             key = "ICP_ENTR_BTN"
@@ -852,6 +855,7 @@ class ViperDriver(Driver):
         self.push_btn(key, delay_after=delay_after, delay_release=delay_release)
 
     def icp_ded(self, num, delay_after=None, delay_release=None):
+        # print(f"icp_ded {num}")
         if delay_release is None:
             delay_release = self.short_delay
 
@@ -866,7 +870,11 @@ class ViperDriver(Driver):
         self.s.sendto(f"ICP_DED_SW 1\n".replace("OSB", "OS").encode(
             "utf-8"), (self.host, self.port))
 
+        if delay_after is not None:
+            sleep(delay_after)
+
     def icp_data(self, num, delay_after=None, delay_release=None):
+        # print(f"icp_data {num}")
         if delay_release is None:
             delay_release = self.short_delay
 
@@ -892,10 +900,11 @@ class ViperDriver(Driver):
         if delay_after is not None:
             sleep(delay_after)
 
-    def enter_number(self, number):
+    def enter_number(self, number, delay_after=None, delay_release=None):
+        # print(f"enter_number {number}")
         for num in str(number):
             if num in "0123456789":
-                self.icp_btn(num)
+                self.icp_btn(num, delay_after, delay_release)
 
     def enter_elevation(self, elev):
         #
@@ -1060,25 +1069,24 @@ class ViperDriver(Driver):
                         else:
                             self.mfd_btn("L", osb_index[i])
 
-    def enter_cmds_prog(self, type, prog, command_q=None, progress_q=None):
-        if prog is not None:
+    def enter_cmds_prog_elem(self, field, dflt):
+        if field != dflt:
+            self.enter_number(field)                        # Enter field value
+            self.icp_btn("ENTR", delay_release=0.15)          # Commit field value
+        self.icp_data('DN', delay_after=0.15)               # Advance to next field
+
+    def enter_cmds_prog(self, type, prog, dflt, command_q=None, progress_q=None):
+        if prog is not None and prog != dflt:
             self.bkgnd_advance(command_q, progress_q)
 
-            self.logger.info(f"Entering CMDS {type} program: {prog}")
+            self.logger.info(f"Entering CMDS {type} program: <{prog}>, <{dflt}> default")
             fields = prog.split(",")
+            dflts = dflt.split(",")
 
-            self.enter_number(fields[0])                # BQ field
-            self.icp_btn("ENTR", delay_after=0.15)
-            self.icp_data('DN', delay_after=0.15)       # BQ --> BI
-            self.enter_number(fields[1])                # BI field
-            self.icp_btn("ENTR", delay_after=0.15)
-            self.icp_data('DN', delay_after=0.15)       # BI --> SQ
-            self.enter_number(fields[2])                # SQ field
-            self.icp_btn("ENTR", delay_after=0.15)
-            self.icp_data('DN', delay_after=0.15)       # SQ --> SI
-            self.enter_number(fields[3])                # SI field
-            self.icp_btn("ENTR", delay_after=0.15)
-            self.icp_data('DN', delay_after=0.15)       # SI --> BQ
+            self.enter_cmds_prog_elem(fields[0], dflts[0])  # BQ field
+            self.enter_cmds_prog_elem(fields[1], dflts[1])  # BI field
+            self.enter_cmds_prog_elem(fields[2], dflts[2])  # SQ field
+            self.enter_cmds_prog_elem(fields[3], dflts[3])  # SI field
 
         else:
             self.logger.info(f"Skipping unchanged CMDS {type} program")
@@ -1095,11 +1103,14 @@ class ViperDriver(Driver):
             types = [ "Chaff", "Flare" ]
             for type in types:
                 for prog in progs:
-                    if prog is not None:
-                        prog = prog.split(";")[types.index(type)]
-                    self.enter_cmds_prog(type, prog, command_q=command_q, progress_q=progress_q)
-
-                self.icp_data('SEQ', delay_after=0.35)  # CHAFF --> FLARE
+                    if prog[0] is not None:
+                        self.enter_cmds_prog(type,
+                                             prog[0].split(";")[types.index(type)],
+                                             prog[1].split(";")[types.index(type)],
+                                             command_q=command_q, progress_q=progress_q)
+                    else:
+                        self.enter_cmds_prog(type, None, None, command_q=command_q, progress_q=progress_q)
+                self.icp_data('SEQ', delay_after=0.35)      # CHAFF --> FLARE
 
             self.icp_data("RTN")
 
@@ -1163,12 +1174,13 @@ class ViperDriver(Driver):
         self.bkgnd_prog_step = (1.0 / (len(waypoints) + avs_dict_len + 1)) * 100.0
         self.bkgnd_prog_cur = 0
 
-        cmds_progs = [ avs_dict.get('f16_cmds_setup_p1'),
-                       avs_dict.get('f16_cmds_setup_p2'),
-                       avs_dict.get('f16_cmds_setup_p3'),
-                       avs_dict.get('f16_cmds_setup_p4'),
-                       avs_dict.get('f16_cmds_setup_p5'),
-                       avs_dict.get('f16_cmds_setup_p6')
+        cdp_map = cmds_default_progs()
+        cmds_progs = [ ( avs_dict.get('f16_cmds_setup_p1'), cdp_map['MAN 1'] ),
+                       ( avs_dict.get('f16_cmds_setup_p2'), cdp_map['MAN 2'] ),
+                       ( avs_dict.get('f16_cmds_setup_p3'), cdp_map['MAN 3'] ),
+                       ( avs_dict.get('f16_cmds_setup_p4'), cdp_map['MAN 4'] ),
+                       ( avs_dict.get('f16_cmds_setup_p5'), cdp_map['Panic'] ),
+                       ( avs_dict.get('f16_cmds_setup_p6'), cdp_map['Bypass'] )
         ]
         if cmds_progs.count(None) == 6:
             cmds_progs = None
