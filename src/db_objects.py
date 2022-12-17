@@ -176,6 +176,10 @@ class Profile:
         return sequences
 
     @property
+    def has_av_setup(self):
+        return self.av_setup_name and self.av_setup_name != "DCS Default"
+
+    @property
     def has_waypoints(self):
         return len(self.waypoints) > 0
 
@@ -227,7 +231,7 @@ class Profile:
 
     @property
     def av_setup_dict(self):
-        if self.av_setup_name is not None:
+        if self.has_av_setup and (self.aircraft == "viper"):
             try:
                 avs_dict = dict()
 
@@ -306,6 +310,8 @@ class Profile:
                                   Longitude(wp.longitude)).to_string("d%°%m%'%S%\"%H")
                 readable_string += str(wp)
                 readable_string += f": {position[0]} {position[1]} | {wp.elevation}ft\n"
+        if len(self.waypoints) == 0:
+            readable_string += "None.\n"
 
         readable_string += "\n-- Preplanned Mission Waypoints:\n\n"
 

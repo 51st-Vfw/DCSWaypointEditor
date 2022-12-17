@@ -555,7 +555,7 @@ class WaypointEditorGUI:
         self.tk_menu_dcswe.add_command(label='Quit', command=self.menu_quit)
 
         named_prof_norm = 'normal' if self.profile.profilename != "" else 'disabled'
-        has_wypt_norm = 'normal' if self.profile.has_waypoints else 'disabled'
+        has_wypt_norm = 'normal' if self.profile.has_waypoints or self.profile.has_av_setup else 'disabled'
         dirty_norm = 'normal' if self.is_profile_dirty else 'disabled'
         if self.dcs_bios_version is not None:
             mission_norm = 'normal' if os.path.exists(self.editor.prefs.path_mission) else 'disabled'
