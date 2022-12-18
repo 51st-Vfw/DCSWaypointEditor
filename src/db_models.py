@@ -3,7 +3,7 @@
 *  db.py: DCS Waypoint Editor profile database models
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-22 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -143,6 +143,14 @@ class AvionicsSetupModel(BaseModel):
     # Selects optimized setup of MFD formats.
     #
     f16_mfd_setup_opt = IntegerField(default=False)
+
+    # airframes supported: viper
+    #
+    # Fields added in db v.8, v1.7.0-51stVFW and later
+    #
+    # Selects optimized setup of CMDS Programs.
+    #
+    f16_cmds_setup_opt = IntegerField(default=False)
 
     @staticmethod
     def list_all():
