@@ -42,7 +42,7 @@ mfd_format_map = { ""     : 1,
                    "WPN"  : 18
 }
 
-# Maps UI MFD format key base onto default MFD format setups (as of DCS v2.8.0.32235).
+# Maps UI MFD format key base onto default MFD format setups (as of DCS v2.8.1.34437).
 #
 mfd_default_setup_map = { 'ux_nav' : [ 20, 9, 8, 6, 7, 1 ],     # L: FCR, TEST, DTE; R: SMS, HSD, -
                           'ux_air' : [ 20, 10, 9, 6, 7, 1 ],    # L: FCR, FLCS, TEST; R: SMS, HSD -
@@ -78,12 +78,6 @@ cmds_prog_default_map = { 'MAN 1'  : "1,0.020,10,1.00;1,0.020,10,1.00",
                           'Panic'  : "2,0.050,20,0.75;2,0.050,20,0.75",
                           'Bypass' : "1,0.020,1,0.50;1,0.020,1,0.50"
 }
-
-
-# return the default cmds programs
-#
-def cmds_default_progs():
-    return cmds_prog_default_map
 
 
 class AvionicsSetupViperGUI:
@@ -328,9 +322,14 @@ class AvionicsSetupViperGUI:
             PyGUI.Text("None", key='ux_cmds_prog_update', pad=((4,6),6), size=(30,1))
         ]
 
+        layout_cmds_opt = [
+            PyGUI.Checkbox("Only set CMDS program parameters when they differ from the default parameters (reduces setup time)",
+                           key='ux_cmds_force', enable_events=True, size=(96,1), pad=(10,(0,12)))
+        ]
+
         layout_cmds_tab = [
             PyGUI.Tab("CMDS",
-                      [layout_cmds_sel, layout_cmds_prog_params, layout_cmds_prog_updates])
+                      [layout_cmds_sel, layout_cmds_prog_params, layout_cmds_prog_updates, layout_cmds_opt])
         ]
 
         # ---- Miscellaneous
@@ -664,6 +663,7 @@ class AvionicsSetupViperGUI:
             self.cur_cmds_prog_map['MAN 4'] = self.base_gui.dbase_setup.f16_cmds_setup_p4
             self.cur_cmds_prog_map['Panic'] = self.base_gui.dbase_setup.f16_cmds_setup_p5
             self.cur_cmds_prog_map['Bypass'] = self.base_gui.dbase_setup.f16_cmds_setup_p6
+            self.base_gui.window['ux_cmds_force'].update(value=self.base_gui.dbase_setup.f16_cmds_setup_opt)
         else:
             self.cur_cmds_prog_map['MAN 1'] = None
             self.cur_cmds_prog_map['MAN 2'] = None
@@ -671,6 +671,7 @@ class AvionicsSetupViperGUI:
             self.cur_cmds_prog_map['MAN 4'] = None
             self.cur_cmds_prog_map['Panic'] = None
             self.cur_cmds_prog_map['Bypass'] = None
+            self.base_gui.window['ux_cmds_force'].update(value=False)
         self.set_gui_cmds_prog(self.cur_cmds_prog_map[cur_prog])
         self.is_dirty = False
     
@@ -685,6 +686,7 @@ class AvionicsSetupViperGUI:
             self.base_gui.dbase_setup.f16_cmds_setup_p4 = self.cur_cmds_prog_map['MAN 4']
             self.base_gui.dbase_setup.f16_cmds_setup_p5 = self.cur_cmds_prog_map['Panic']
             self.base_gui.dbase_setup.f16_cmds_setup_p6 = self.cur_cmds_prog_map['Bypass']
+            self.base_gui.dbase_setup.f16_cmds_setup_opt = self.base_gui.values['ux_cmds_force']
             if db_save:
                 try:
                     self.base_gui.dbase_setup.save()
@@ -810,6 +812,9 @@ class AvionicsSetupViperGUI:
                 self.is_dirty = True
             else:
                 self.base_gui.window[event].update(self.base_gui.values[event][:-1])
+
+    def do_cmds_force(self, event):
+        self.is_dirty = True
 
     def do_misc_dirty(self, event):
         self.is_dirty = True
@@ -965,6 +970,7 @@ class AvionicsSetupViperGUI:
                  'ux_cmds_f_bi' : self.do_cmds_prog_field_bint,
                  'ux_cmds_f_sq' : self.do_cmds_prog_field_quantity,
                  'ux_cmds_f_si' : self.do_cmds_prog_field_sint,
+                 'ux_cmds_force' : self.do_cmds_force,
                  'ux_bulls_select' : self.do_misc_dirty,
                  'ux_jhmcs_hud' : self.do_misc_dirty,
                  'ux_jhmcs_pit' : self.do_misc_dirty,
