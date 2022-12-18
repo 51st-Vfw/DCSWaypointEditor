@@ -3,7 +3,7 @@
 *  wp_editor_gui.py: DCS Waypoint Editor main GUI
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-22 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -937,6 +937,8 @@ class WaypointEditorGUI:
             encoded = pyperclip.paste()
             try:
                 tmp_profile = Profile.from_string(json_unzip(encoded))
+                if tmp_profile is None:
+                    raise Exception("Unable to import profile")
                 #
                 # note that encoded JSON may carry profile name, we will use that as the 
                 # default name for the profile.
@@ -974,7 +976,6 @@ class WaypointEditorGUI:
                     PyGUI.Popup(f"Failed to parse the file '{file}' for import.", title="Import Fails")
             elif filename is not None and len(filename) == 0:
                     PyGUI.Popup(f"There was no file specified to import.", title="Import Fails")
-
 
     def do_menu_mission_install_package(self):
         try:
