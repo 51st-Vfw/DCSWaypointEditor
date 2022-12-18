@@ -3,7 +3,7 @@
 *  drivers.py: Airframe-specific interfaces to avionics
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-22 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -26,8 +26,6 @@ import socket
 import queue
 
 from time import sleep
-
-from src.avionics_setup_viper_gui import cmds_default_progs
 
 
 
@@ -1072,7 +1070,7 @@ class ViperDriver(Driver):
     def enter_cmds_prog_elem(self, field, dflt):
         if field != dflt:
             self.enter_number(field)                        # Enter field value
-            self.icp_btn("ENTR", delay_release=0.15)          # Commit field value
+            self.icp_btn("ENTR", delay_release=0.15)        # Commit field value
         self.icp_data('DN', delay_after=0.15)               # Advance to next field
 
     def enter_cmds_prog(self, type, prog, dflt, command_q=None, progress_q=None):
@@ -1095,7 +1093,12 @@ class ViperDriver(Driver):
         self.icp_ded("UP", delay_after=0.25)            # Increment program number
 
     def enter_cmds(self, progs, command_q=None, progress_q=None):
+        num_update = 0
         if progs is not None:
+            for prog in progs:
+                if prog[0] is not None:
+                    num_update += 1
+        if num_update > 0:
             self.icp_btn('LIST')                        # Select CMDS DED page
             self.icp_btn('7')
             self.icp_data('SEQ', delay_after=0.35)      # BINGO --> CHAFF
@@ -1156,59 +1159,63 @@ class ViperDriver(Driver):
     def enter_all(self, profile, command_q=None, progress_q=None):
         waypoints = self.validate_waypoints(profile.all_waypoints_as_list)
 
-        avs_dict = profile.av_setup_dict
-        avs_dict_len = len(avs_dict)
-        if avs_dict is not None and avs_dict.get('f16_mfd_setup_dog') is not None:
-            avs_dict_len += 1
-        if avs_dict is not None and avs_dict.get('f16_bulls_setup') is not None:
+        # roughly speaking, one element in the avs_dict corresponds to one step in the setup
+        # process. adjust here based on deviations from that.
+        #
+        # 1) DGFT MFD setup requires 2 steps, though there is one avs_dict entry
+        #
+        avs_dict = profile.av_setup.to_dict
+        num_steps = len(avs_dict)
+        if avs_dict.get('f16_mfd_setup_dog') is not None:
+            num_steps += 1
+        if avs_dict.get('f16_bulls_setup') is not None:
             bulls_setup = avs_dict.get('f16_bulls_setup')
-            avs_dict_len += 1
+            num_steps += 1
         else:
             bulls_setup = None
-        if avs_dict is not None and avs_dict.get('f16_jhmcs_setup') is not None:
+        if avs_dict.get('f16_jhmcs_setup') is not None:
             jhmcs_setup = avs_dict.get('f16_jhmcs_setup')
-            avs_dict_len += 1
+            num_steps += 1
         else:
             jhmcs_setup = None
 
-        self.bkgnd_prog_step = (1.0 / (len(waypoints) + avs_dict_len + 1)) * 100.0
+        # build array of tuples ( setup, default ) for each cmds program. array is in program
+        # order and set up according to optimized setting.
+        #
+        cmds_progs = [ ]
+        for pgm_num in range(1,6):
+            pgm_name = f"f16_cmds_setup_p{pgm_num}"
+            dfl_name = f"f16_cmds_setup_p{pgm_num}_dflt"
+            if avs_dict.get('f16_cmds_setup_opt') == True:
+                dfl = avs_dict.get(dfl_name)
+            else:
+                dfl = "0,0,0,0;0,0,0,0"
+            cmds_progs.append((avs_dict.get(pgm_name), dfl))
+
+        # build dictionary of tuples ( setup, default ) for each mfd setup. dictionary is set
+        # up according to optimized setting.
+        #
+        mfd_modes = { 'NAV' : ('nav', 'nav'), 'AA_MODE' : ('air', 'air'), 'AG_MODE' : ('gnd', 'gnd'),
+                      'DGFT_D' : ('dog', 'dog'), 'DGFT_M' : ('air', 'dog') }
+        mfd_progs = { }
+        for mode in mfd_modes.keys():
+            pgm_name = f"f16_mfd_setup_{mfd_modes[mode][0]}"
+            dfl_name = f"f16_mfd_setup_{mfd_modes[mode][1]}_dflt"
+            if avs_dict.get('f16_mfd_setup_opt') == True:
+                dfl = avs_dict.get(dfl_name)
+            else:
+                dfl = "0,0,0,0,0,0"
+            mfd_progs[mode] = (avs_dict.get(pgm_name), dfl)
+
+        self.bkgnd_prog_step = (1.0 / (len(waypoints) + num_steps + 1)) * 100.0
         self.bkgnd_prog_cur = 0
-
-        cdp_map = cmds_default_progs()
-        cmds_progs = [ ( avs_dict.get('f16_cmds_setup_p1'), cdp_map['MAN 1'] ),
-                       ( avs_dict.get('f16_cmds_setup_p2'), cdp_map['MAN 2'] ),
-                       ( avs_dict.get('f16_cmds_setup_p3'), cdp_map['MAN 3'] ),
-                       ( avs_dict.get('f16_cmds_setup_p4'), cdp_map['MAN 4'] ),
-                       ( avs_dict.get('f16_cmds_setup_p5'), cdp_map['Panic'] ),
-                       ( avs_dict.get('f16_cmds_setup_p6'), cdp_map['Bypass'] )
-        ]
-        if cmds_progs.count(None) == 6:
-            cmds_progs = None
-
-        if avs_dict.get('f16_mfd_setup_opt'):
-            mfd_nav_dflt = avs_dict.get('f16_mfd_setup_nav_dflt')
-            mfd_a2a_dflt = avs_dict.get('f16_mfd_setup_air_dflt')
-            mfd_a2g_dflt = avs_dict.get('f16_mfd_setup_gnd_dflt')
-            mfd_dog_dflt = avs_dict.get('f16_mfd_setup_dog_dflt')
-        else:
-            mfd_nav_dflt = "0,0,0,0,0,0"
-            mfd_a2a_dflt = "0,0,0,0,0,0"
-            mfd_a2g_dflt = "0,0,0,0,0,0"
-            mfd_dog_dflt = "0,0,0,0,0,0"
 
         try:
             self.enter_waypoints(waypoints, command_q=command_q, progress_q=progress_q)
             self.enter_tacan(avs_dict.get('tacan_yard'), command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("NAV", avs_dict.get('f16_mfd_setup_nav'), mfd_nav_dflt,
-                           command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("AA_MODE", avs_dict.get('f16_mfd_setup_air'), mfd_a2a_dflt,
-                           command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("AG_MODE", avs_dict.get('f16_mfd_setup_gnd'), mfd_a2g_dflt,
-                           command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("DGFT_D", avs_dict.get('f16_mfd_setup_dog'), mfd_dog_dflt,
-                           command_q=command_q, progress_q=progress_q)
-            self.enter_mfd("DGFT_M", avs_dict.get('f16_mfd_setup_air'), mfd_dog_dflt,
-                           command_q=command_q, progress_q=progress_q)
+            for mode in [ 'NAV', 'AA_MODE', 'AG_MODE', 'DGFT_D', 'DGFT_M' ]:
+                self.enter_mfd(mode, mfd_progs[mode][0], mfd_progs[mode][1],
+                               command_q=command_q, progress_q=progress_q)
             self.enter_cmds(cmds_progs, command_q=command_q, progress_q=progress_q)
             self.enter_bulls(bulls_setup, command_q=command_q, progress_q=progress_q)
             self.enter_jhmcs(jhmcs_setup, command_q=command_q, progress_q=progress_q)

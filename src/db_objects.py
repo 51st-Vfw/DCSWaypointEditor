@@ -3,7 +3,7 @@
 *  db_objects.py: DCS Waypoint Editor profile database objects
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-22 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -180,6 +180,13 @@ class Profile:
         return self.av_setup_name and self.av_setup_name != "DCS Default"
 
     @property
+    def av_setup(self):
+        if self.has_av_setup:
+            return AvionicsSetup(self.av_setup_name, self.aircraft)
+        else:
+            return AvionicsSetup()
+    
+    @property
     def has_waypoints(self):
         return len(self.waypoints) > 0
 
@@ -229,69 +236,11 @@ class Profile:
 
         return d
 
-    @property
-    def av_setup_dict(self):
-        if self.has_av_setup and (self.aircraft == "viper"):
-            try:
-                avs_dict = dict()
-
-                # Default MFD format setups (as of DCS v2.8.0.32235).
-                #
-                avs_dict['f16_mfd_setup_nav_dflt'] = "20,9,8,6,7,1"     # L: FCR, TEST, DTE; R: SMS, HSD, -
-                avs_dict['f16_mfd_setup_air_dflt'] = "20,10,9,6,7,1"    # L: FCR, FLCS, TEST; R: SMS, HSD -
-                avs_dict['f16_mfd_setup_gnd_dflt'] = "20,10,9,6,7,1"    # L: FCR, FLCS, TEST; R: SMS, HSD -
-                avs_dict['f16_mfd_setup_dog_dflt'] = "20,1,1,6,1,1"     # L: FCR, -, -; R: SMS, -, -
-
-                try:
-                    setup = AvionicsSetupModel.get(AvionicsSetupModel.name == self.av_setup_name)
-                    if setup.tacan_yard is not None:
-                        avs_dict['tacan_yard'] = setup.tacan_yard
-                    if setup.f16_mfd_setup_nav is not None:
-                        avs_dict['f16_mfd_setup_nav'] = setup.f16_mfd_setup_nav
-                    if setup.f16_mfd_setup_air is not None:
-                        avs_dict['f16_mfd_setup_air'] = setup.f16_mfd_setup_air
-                    if setup.f16_mfd_setup_gnd is not None:
-                        avs_dict['f16_mfd_setup_gnd'] = setup.f16_mfd_setup_gnd
-                    if setup.f16_mfd_setup_dog is not None:
-                        avs_dict['f16_mfd_setup_dog'] = setup.f16_mfd_setup_dog
-                    if setup.f16_mfd_setup_opt is not None:
-                        avs_dict['f16_mfd_setup_opt'] = setup.f16_mfd_setup_opt
-                    if setup.f16_cmds_setup_p1 is not None:
-                        avs_dict['f16_cmds_setup_p1'] = setup.f16_cmds_setup_p1
-                    if setup.f16_cmds_setup_p2 is not None:
-                        avs_dict['f16_cmds_setup_p2'] = setup.f16_cmds_setup_p2
-                    if setup.f16_cmds_setup_p3 is not None:
-                        avs_dict['f16_cmds_setup_p3'] = setup.f16_cmds_setup_p3
-                    if setup.f16_cmds_setup_p4 is not None:
-                        avs_dict['f16_cmds_setup_p4'] = setup.f16_cmds_setup_p4
-                    if setup.f16_cmds_setup_p5 is not None:
-                        avs_dict['f16_cmds_setup_p5'] = setup.f16_cmds_setup_p5
-                    if setup.f16_cmds_setup_p6 is not None:
-                        avs_dict['f16_cmds_setup_p6'] = setup.f16_cmds_setup_p6
-                    if setup.f16_bulls_setup is not None:
-                        avs_dict['f16_bulls_setup'] = setup.f16_bulls_setup
-                    if setup.f16_jhmcs_setup is not None:
-                        avs_dict['f16_jhmcs_setup'] = setup.f16_jhmcs_setup
-                except:
-                    pass
-                return avs_dict
-            except:
-                pass
-        return None
-
     def waypoints_of_type(self, wp_type):
         return [wp for wp in self.waypoints if wp.wp_type == wp_type]
 
     def get_sequence(self, identifier):
         return self.sequences_dict.get(identifier, list())
-
-    def to_dict(self):
-        return dict(
-            waypoints=[waypoint.as_dict for waypoint in self.waypoints],
-            name=self.profilename,
-            aircraft=self.aircraft,
-            av_setup_name=self.av_setup_name
-        )
 
     def update_waypoint_numbers(self):
         for _, station_msn_list in self.stations_dict.items():
@@ -301,6 +250,14 @@ class Profile:
         for _, waypoint_list in self.waypoints_dict.items():
             for i, waypoint in enumerate(waypoint_list, 1):
                 waypoint.number = i
+
+    def to_dict(self):
+        return dict(
+            waypoints=[waypoint.as_dict for waypoint in self.waypoints],
+            name=self.profilename,
+            aircraft=self.aircraft,
+            av_setup_name=self.av_setup_name,
+        )
 
     def to_readable_string(self):
         readable_string = "-- Waypoints:\n\n"
@@ -330,8 +287,8 @@ class Profile:
 
     @staticmethod
     def from_string(profile_string):
-        profile_data = json.loads(profile_string)
         try:
+            profile_data = json.loads(profile_string)
             profile_name = profile_data["name"]
             waypoints = profile_data["waypoints"]
             wps = [Waypoint.to_object(w) for w in waypoints if w['wp_type'] != 'MSN']
@@ -439,3 +396,70 @@ class Profile:
             waypoint.delete_instance()
 
         profile.delete_instance(recursive=True)
+
+
+class AvionicsSetup:
+    def __init__(self, name=None, aircraft="viper"):
+        self.name = name
+        self.aircraft = aircraft
+        self.db_model = None
+
+        if name is not None and name != "DCS Default":
+            try:
+                self.db_model = AvionicsSetupModel.get(AvionicsSetupModel.name == self.name)
+            except:
+                self.db_model = None
+
+    @property
+    def to_dict(self):
+        avs_dict = dict()
+        if self.db_model is not None and self.aircraft == "viper":
+
+            # Default MFD format setups (as of DCS v2.8.1.34437). These are not backed in the database.
+            #
+            avs_dict['f16_mfd_setup_nav_dflt'] = "20,9,8,6,7,1"     # L: FCR, TEST, DTE; R: SMS, HSD, -
+            avs_dict['f16_mfd_setup_air_dflt'] = "20,10,9,6,7,1"    # L: FCR, FLCS, TEST; R: SMS, HSD -
+            avs_dict['f16_mfd_setup_gnd_dflt'] = "20,10,9,6,7,1"    # L: FCR, FLCS, TEST; R: SMS, HSD -
+            avs_dict['f16_mfd_setup_dog_dflt'] = "20,1,1,6,1,1"     # L: FCR, -, -; R: SMS, -, -
+
+            # Default CMDS program setups (as of DCS v2.8.1.34437). These are not backed in the database.
+            #
+            avs_dict['f16_cmds_setup_p1_dflt'] = "1,0.020,10,1.00;1,0.020,10,1.00"      # MAN 1
+            avs_dict['f16_cmds_setup_p2_dflt'] = "1,0.020,10,0.50;1,0.020,10,0.50"      # MAN 2
+            avs_dict['f16_cmds_setup_p3_dflt'] = "2,0.100,5,1.00;2,0.100,5,1.00"        # MAN 3
+            avs_dict['f16_cmds_setup_p4_dflt'] = "2,0.100,5,0.50;2,0.100,5,0.50"        # MAN 4
+            avs_dict['f16_cmds_setup_p5_dflt'] = "2,0.050,20,0.75;2,0.050,20,0.75"      # Panic
+            avs_dict['f16_cmds_setup_p6_dflt'] = "1,0.020,1,0.50;1,0.020,1,0.50"        # Bypass
+
+            if self.db_model.tacan_yard is not None:
+                avs_dict['tacan_yard'] = self.db_model.tacan_yard
+            if self.db_model.f16_mfd_setup_nav is not None:
+                avs_dict['f16_mfd_setup_nav'] = self.db_model.f16_mfd_setup_nav
+            if self.db_model.f16_mfd_setup_air is not None:
+                avs_dict['f16_mfd_setup_air'] = self.db_model.f16_mfd_setup_air
+            if self.db_model.f16_mfd_setup_gnd is not None:
+                avs_dict['f16_mfd_setup_gnd'] = self.db_model.f16_mfd_setup_gnd
+            if self.db_model.f16_mfd_setup_dog is not None:
+                avs_dict['f16_mfd_setup_dog'] = self.db_model.f16_mfd_setup_dog
+            if self.db_model.f16_mfd_setup_opt is not None:
+                avs_dict['f16_mfd_setup_opt'] = self.db_model.f16_mfd_setup_opt
+            if self.db_model.f16_cmds_setup_p1 is not None:
+                avs_dict['f16_cmds_setup_p1'] = self.db_model.f16_cmds_setup_p1
+            if self.db_model.f16_cmds_setup_p2 is not None:
+                avs_dict['f16_cmds_setup_p2'] = self.db_model.f16_cmds_setup_p2
+            if self.db_model.f16_cmds_setup_p3 is not None:
+                avs_dict['f16_cmds_setup_p3'] = self.db_model.f16_cmds_setup_p3
+            if self.db_model.f16_cmds_setup_p4 is not None:
+                avs_dict['f16_cmds_setup_p4'] = self.db_model.f16_cmds_setup_p4
+            if self.db_model.f16_cmds_setup_p5 is not None:
+                avs_dict['f16_cmds_setup_p5'] = self.db_model.f16_cmds_setup_p5
+            if self.db_model.f16_cmds_setup_p6 is not None:
+                avs_dict['f16_cmds_setup_p6'] = self.db_model.f16_cmds_setup_p6
+            if self.db_model.f16_cmds_setup_opt is not None:
+                avs_dict['f16_cmds_setup_opt'] = self.db_model.f16_cmds_setup_opt
+            if self.db_model.f16_bulls_setup is not None:
+                avs_dict['f16_bulls_setup'] = self.db_model.f16_bulls_setup
+            if self.db_model.f16_jhmcs_setup is not None:
+                avs_dict['f16_jhmcs_setup'] = self.db_model.f16_jhmcs_setup
+
+        return avs_dict
