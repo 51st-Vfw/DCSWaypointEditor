@@ -19,7 +19,6 @@
 *
 '''
 
-import copy
 import PySimpleGUI as PyGUI
 
 from src.avionics_setup_viper_gui import AvionicsSetupViperGUI
