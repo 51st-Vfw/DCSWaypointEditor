@@ -1164,7 +1164,7 @@ class ViperDriver(Driver):
         #
         # 1) DGFT MFD setup requires 2 steps, though there is one avs_dict entry
         #
-        avs_dict = profile.av_setup.to_dict
+        avs_dict = profile.av_setup.to_dict()
         num_steps = len(avs_dict)
         if avs_dict.get('f16_mfd_setup_dog') is not None:
             num_steps += 1
