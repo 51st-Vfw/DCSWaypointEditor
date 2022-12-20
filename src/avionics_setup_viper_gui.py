@@ -21,10 +21,14 @@
 '''
 
 import copy
+import json
+import os
 import PySimpleGUI as PyGUI
 
+from pathlib import Path
+
 from src.db_models import AvionicsSetupModel
-from src.gui_util import airframe_type_to_ui_text
+from src.db_objects import AvionicsSetup
 from src.logger import get_logger
 
 
@@ -324,7 +328,7 @@ class AvionicsSetupViperGUI:
 
         layout_cmds_opt = [
             PyGUI.Checkbox("Only set CMDS program parameters when they differ from the default parameters (reduces setup time)",
-                           key='ux_cmds_force', enable_events=True, size=(96,1), pad=(10,(0,12)))
+                           key='ux_cmds_force', enable_events=True, size=(80,1), pad=(10,(0,12)))
         ]
 
         layout_cmds_tab = [
@@ -366,6 +370,21 @@ class AvionicsSetupViperGUI:
                       [layout_bulls, layout_jhmcs])
         ]
 
+        # ---- Sharing
+
+        layout_share_title = [
+            PyGUI.Text("You can share avionics setups using export and import functions", pad=(12,12))
+        ]
+
+        layout_share = [
+            PyGUI.Button("Export Setup to File...", key='ux_share_export', size=(20,1), pad=(12,0)),
+            PyGUI.Button("Import Setup from File...", key='ux_share_import', size=(20,1), pad=(12,0))
+        ]
+
+        layout_share_tab = [
+            PyGUI.Tab("Sharing", [layout_share_title, layout_share])
+        ]
+
         # ---- Management Controls
 
         layout_mgmt = [
@@ -382,7 +401,8 @@ class AvionicsSetupViperGUI:
         return PyGUI.TabGroup([layout_mfd_tab,
                                layout_tacan_tab,
                                layout_cmds_tab,
-                               layout_misc_tab], pad=(8,8))
+                               layout_misc_tab,
+                               layout_share_tab], pad=(8,8))
 
     # update the gui for the enable state of a MFD master mode
     #
@@ -577,30 +597,32 @@ class AvionicsSetupViperGUI:
 
     # synchronize TACAN setup UI and database
     #
-    def copy_tacan_dbase_to_ui(self):
-        if self.base_gui.dbase_setup is not None:
-            if self.base_gui.dbase_setup.tacan_yard is None:
-                self.base_gui.window['ux_tacan_ckbx'].update(value=False)
-                self.base_gui.window['ux_tacan_chan'].update("1")
-            else:
-                fields = [ str(field) for field in self.base_gui.dbase_setup.tacan_yard.split(",") ]
-                if fields[2] == "L":
-                    role_index = 0
-                else:
-                    role_index = 1
-                self.base_gui.window['ux_tacan_ckbx'].update(value=True)
-                self.base_gui.window['ux_tacan_chan'].update(fields[0])
-                self.base_gui.window['ux_tacan_xy_select'].update(value=fields[1])
-                self.base_gui.window['ux_tacan_lw_select'].update(set_to_index=role_index)
-        else:
+    def copy_tacan_core_to_ui(self, tacan_yard):
+        if tacan_yard is None:
             self.base_gui.window['ux_tacan_ckbx'].update(value=False)
             self.base_gui.window['ux_tacan_chan'].update("1")
             self.base_gui.window['ux_tacan_xy_select'].update(value="X")
             self.base_gui.window['ux_tacan_lw_select'].update(value="Flight Lead")
+        else:
+            fields = [ str(field) for field in tacan_yard.split(",") ]
+            if fields[2] == "L":
+                role_index = 0
+            else:
+                role_index = 1
+            self.base_gui.window['ux_tacan_ckbx'].update(value=True)
+            self.base_gui.window['ux_tacan_chan'].update(fields[0])
+            self.base_gui.window['ux_tacan_xy_select'].update(value=fields[1])
+            self.base_gui.window['ux_tacan_lw_select'].update(set_to_index=role_index)
+
+    def copy_tacan_dbase_to_ui(self, db_model=None):
+        if db_model is not None:
+            self.copy_tacan_core_to_ui(db_model.tacan_yard)
+        else:
+            self.copy_tacan_core_to_ui(None)
         self.is_dirty = False
 
-    def copy_tacan_ui_to_dbase(self, db_save=True):
-        if self.base_gui.dbase_setup is not None:
+    def copy_tacan_ui_to_dbase(self, db_model=None, db_save=True):
+        if db_model is not None:
             if self.base_gui.values['ux_tacan_ckbx'] == False:
                 tacan_yard = None
             else:
@@ -611,41 +633,43 @@ class AvionicsSetupViperGUI:
                 else:
                     lw = "W"
                 tacan_yard = f"{chan},{xy},{lw}"
-            self.base_gui.dbase_setup.tacan_yard = tacan_yard
+            db_model.tacan_yard = tacan_yard
             if db_save:
                 try:
-                    self.base_gui.dbase_setup.save()
+                    db_model.save()
                 except:
                     PyGUI.PopupError("Unable to save TACAN yardstick information to database?")
             self.is_dirty = False
     
+
     # synchronize F-16 MFD setup UI and database
     #
-    def copy_f16_mfd_dbase_to_ui(self):
-        if self.base_gui.dbase_setup is not None:
-            self.set_gui_mfd_row('ux_nav', self.base_gui.dbase_setup.f16_mfd_setup_nav)
-            self.set_gui_mfd_row('ux_air', self.base_gui.dbase_setup.f16_mfd_setup_air)
-            self.set_gui_mfd_row('ux_gnd', self.base_gui.dbase_setup.f16_mfd_setup_gnd)
-            self.set_gui_mfd_row('ux_dog', self.base_gui.dbase_setup.f16_mfd_setup_dog)
-            self.base_gui.window['ux_mfd_force'].update(value=self.base_gui.dbase_setup.f16_mfd_setup_opt)
+    def copy_f16_mfd_core_to_ui(self, setup_nav, setup_air, setup_gnd, setup_dog, setup_opt):
+        self.set_gui_mfd_row('ux_nav', setup_nav)
+        self.set_gui_mfd_row('ux_air', setup_air)
+        self.set_gui_mfd_row('ux_gnd', setup_gnd)
+        self.set_gui_mfd_row('ux_dog', setup_dog)
+        self.base_gui.window['ux_mfd_force'].update(value=setup_opt)
+
+    def copy_f16_mfd_dbase_to_ui(self, db_model=None):
+        if db_model is not None:
+            self.copy_f16_mfd_core_to_ui(db_model.f16_mfd_setup_nav, db_model.f16_mfd_setup_air,
+                                         db_model.f16_mfd_setup_gnd, db_model.f16_mfd_setup_dog,
+                                         db_model.f16_mfd_setup_opt)
         else:
-            self.set_gui_mfd_row('ux_nav', None)
-            self.set_gui_mfd_row('ux_air', None)
-            self.set_gui_mfd_row('ux_gnd', None)
-            self.set_gui_mfd_row('ux_dog', None)
-            self.base_gui.window['ux_mfd_force'].update(value=False)
+            self.copy_f16_mfd_core_to_ui(None, None, None, None, False)
         self.is_dirty = False
     
-    def copy_f16_mfd_ui_to_dbase(self, db_save=True):
-        if self.base_gui.dbase_setup is not None:
-            self.base_gui.dbase_setup.f16_mfd_setup_nav = self.get_gui_mfd_row('ux_nav')
-            self.base_gui.dbase_setup.f16_mfd_setup_air = self.get_gui_mfd_row('ux_air')
-            self.base_gui.dbase_setup.f16_mfd_setup_gnd = self.get_gui_mfd_row('ux_gnd')
-            self.base_gui.dbase_setup.f16_mfd_setup_dog = self.get_gui_mfd_row('ux_dog')
-            self.base_gui.dbase_setup.f16_mfd_setup_opt = self.base_gui.values['ux_mfd_force']
+    def copy_f16_mfd_ui_to_dbase(self, db_model=None, db_save=True):
+        if db_model is not None:
+            db_model.f16_mfd_setup_nav = self.get_gui_mfd_row('ux_nav')
+            db_model.f16_mfd_setup_air = self.get_gui_mfd_row('ux_air')
+            db_model.f16_mfd_setup_gnd = self.get_gui_mfd_row('ux_gnd')
+            db_model.f16_mfd_setup_dog = self.get_gui_mfd_row('ux_dog')
+            db_model.f16_mfd_setup_opt = self.base_gui.values['ux_mfd_force']
             if db_save:
                 try:
-                    self.base_gui.dbase_setup.save()
+                    db_model.save()
                 except:
                     PyGUI.PopupError("Unable to save MFD setup information to database?")
             self.is_dirty = False
@@ -653,43 +677,44 @@ class AvionicsSetupViperGUI:
 
     # synchronize F-16 CMDS setup UI and database
     #
-    def copy_f16_cmds_dbase_to_ui(self, cur_prog=None):
+    def copy_f16_cmds_core_to_ui(self, cur_prog, p1, p2, p3, p4, p5, p6, opt):
         if cur_prog is None:
             cur_prog = self.base_gui.values['ux_cmds_prog_sel']
-        if self.base_gui.dbase_setup is not None:
-            self.cur_cmds_prog_map['MAN 1'] = self.base_gui.dbase_setup.f16_cmds_setup_p1
-            self.cur_cmds_prog_map['MAN 2'] = self.base_gui.dbase_setup.f16_cmds_setup_p2
-            self.cur_cmds_prog_map['MAN 3'] = self.base_gui.dbase_setup.f16_cmds_setup_p3
-            self.cur_cmds_prog_map['MAN 4'] = self.base_gui.dbase_setup.f16_cmds_setup_p4
-            self.cur_cmds_prog_map['Panic'] = self.base_gui.dbase_setup.f16_cmds_setup_p5
-            self.cur_cmds_prog_map['Bypass'] = self.base_gui.dbase_setup.f16_cmds_setup_p6
-            self.base_gui.window['ux_cmds_force'].update(value=self.base_gui.dbase_setup.f16_cmds_setup_opt)
-        else:
-            self.cur_cmds_prog_map['MAN 1'] = None
-            self.cur_cmds_prog_map['MAN 2'] = None
-            self.cur_cmds_prog_map['MAN 3'] = None
-            self.cur_cmds_prog_map['MAN 4'] = None
-            self.cur_cmds_prog_map['Panic'] = None
-            self.cur_cmds_prog_map['Bypass'] = None
-            self.base_gui.window['ux_cmds_force'].update(value=False)
+        self.cur_cmds_prog_map['MAN 1'] = p1
+        self.cur_cmds_prog_map['MAN 2'] = p2
+        self.cur_cmds_prog_map['MAN 3'] = p3
+        self.cur_cmds_prog_map['MAN 4'] = p4
+        self.cur_cmds_prog_map['Panic'] = p5
+        self.cur_cmds_prog_map['Bypass'] = p6
+        self.base_gui.window['ux_cmds_force'].update(value=opt)
         self.set_gui_cmds_prog(self.cur_cmds_prog_map[cur_prog])
+
+    def copy_f16_cmds_dbase_to_ui(self, db_model=None, cur_prog=None):
+        if db_model is not None:
+            self.copy_f16_cmds_core_to_ui(cur_prog,
+                                          db_model.f16_cmds_setup_p1, db_model.f16_cmds_setup_p2,
+                                          db_model.f16_cmds_setup_p3, db_model.f16_cmds_setup_p4,
+                                          db_model.f16_cmds_setup_p5, db_model.f16_cmds_setup_p6,
+                                          db_model.f16_cmds_setup_opt)
+        else:
+            self.copy_f16_cmds_core_to_ui(cur_prog, None, None, None, None, None, None, False)
         self.is_dirty = False
     
-    def copy_f16_cmds_ui_to_dbase(self, cur_prog=None, db_save=True):
+    def copy_f16_cmds_ui_to_dbase(self, db_model=None, cur_prog=None, db_save=True):
         if cur_prog is None:
             cur_prog = self.base_gui.values['ux_cmds_prog_sel']
         self.cur_cmds_prog_map[cur_prog] = self.get_gui_cmds_prog()
-        if self.base_gui.dbase_setup is not None:
-            self.base_gui.dbase_setup.f16_cmds_setup_p1 = self.cur_cmds_prog_map['MAN 1']
-            self.base_gui.dbase_setup.f16_cmds_setup_p2 = self.cur_cmds_prog_map['MAN 2']
-            self.base_gui.dbase_setup.f16_cmds_setup_p3 = self.cur_cmds_prog_map['MAN 3']
-            self.base_gui.dbase_setup.f16_cmds_setup_p4 = self.cur_cmds_prog_map['MAN 4']
-            self.base_gui.dbase_setup.f16_cmds_setup_p5 = self.cur_cmds_prog_map['Panic']
-            self.base_gui.dbase_setup.f16_cmds_setup_p6 = self.cur_cmds_prog_map['Bypass']
-            self.base_gui.dbase_setup.f16_cmds_setup_opt = self.base_gui.values['ux_cmds_force']
+        if db_model is not None:
+            db_model.f16_cmds_setup_p1 = self.cur_cmds_prog_map['MAN 1']
+            db_model.f16_cmds_setup_p2 = self.cur_cmds_prog_map['MAN 2']
+            db_model.f16_cmds_setup_p3 = self.cur_cmds_prog_map['MAN 3']
+            db_model.f16_cmds_setup_p4 = self.cur_cmds_prog_map['MAN 4']
+            db_model.f16_cmds_setup_p5 = self.cur_cmds_prog_map['Panic']
+            db_model.f16_cmds_setup_p6 = self.cur_cmds_prog_map['Bypass']
+            db_model.f16_cmds_setup_opt = self.base_gui.values['ux_cmds_force']
             if db_save:
                 try:
-                    self.base_gui.dbase_setup.save()
+                    db_model.save()
                 except:
                     PyGUI.PopupError("Unable to save CMDS setup information to database?")
             self.copy_f16_cmds_dbase_to_ui()
@@ -697,37 +722,36 @@ class AvionicsSetupViperGUI:
 
     # synchronize F-16 Miscellaneous setup UI and database
     #
-    def copy_f16_misc_dbase_to_ui(self):
-        if self.base_gui.dbase_setup is not None:
-            if self.base_gui.dbase_setup.f16_bulls_setup is None:
-                self.base_gui.window['ux_bulls_select'].update(set_to_index=0)
-            else:
-                self.base_gui.window['ux_bulls_select'].update(set_to_index=self.base_gui.dbase_setup.f16_bulls_setup)
-            if self.base_gui.dbase_setup.f16_jhmcs_setup is None:
-                self.base_gui.window['ux_jhmcs_hud'].update(value=True)
-                self.base_gui.window['ux_jhmcs_pit'].update(value=True)
-                self.base_gui.window['ux_jhmcs_rwr'].update(value=True)
-                self.base_gui.window['ux_jhmcs_dc_select'].update(set_to_index=0)
-            else:
-                fields = [ int(field) for field in self.base_gui.dbase_setup.f16_jhmcs_setup.split(",") ]
-                self.base_gui.window['ux_jhmcs_hud'].update(value=bool(fields[0]))
-                self.base_gui.window['ux_jhmcs_pit'].update(value=bool(fields[1]))
-                self.base_gui.window['ux_jhmcs_rwr'].update(value=bool(fields[2]))
-                self.base_gui.window['ux_jhmcs_dc_select'].update(set_to_index=fields[3])
-        else:
+    def copy_f16_misc_core_to_ui(self, bulls, jhmcs):
+        if bulls is None:
             self.base_gui.window['ux_bulls_select'].update(set_to_index=0)
+        else:
+            self.base_gui.window['ux_bulls_select'].update(set_to_index=bulls)
+        if jhmcs is None:
             self.base_gui.window['ux_jhmcs_hud'].update(value=True)
             self.base_gui.window['ux_jhmcs_pit'].update(value=True)
             self.base_gui.window['ux_jhmcs_rwr'].update(value=True)
             self.base_gui.window['ux_jhmcs_dc_select'].update(set_to_index=0)
+        else:
+            fields = [ int(field) for field in jhmcs.split(",") ]
+            self.base_gui.window['ux_jhmcs_hud'].update(value=bool(fields[0]))
+            self.base_gui.window['ux_jhmcs_pit'].update(value=bool(fields[1]))
+            self.base_gui.window['ux_jhmcs_rwr'].update(value=bool(fields[2]))
+            self.base_gui.window['ux_jhmcs_dc_select'].update(set_to_index=fields[3])
+
+    def copy_f16_misc_dbase_to_ui(self, db_model=None):
+        if db_model is not None:
+            self.copy_f16_misc_core_to_ui(db_model.f16_bulls_setup, db_model.f16_jhmcs_setup)
+        else:
+            self.copy_f16_misc_core_to_ui(None, None)
         self.is_dirty = False
 
-    def copy_f16_misc_ui_to_dbase(self, db_save=True):
-        if self.base_gui.dbase_setup is not None:
+    def copy_f16_misc_ui_to_dbase(self, db_model=None, db_save=True):
+        if db_model is not None:
             if self.base_gui.values['ux_bulls_select'] == "Ownship Bullseye":
-                self.base_gui.dbase_setup.f16_bulls_setup = "1"
+                db_model.f16_bulls_setup = "1"
             else:
-                self.base_gui.dbase_setup.f16_bulls_setup = None
+                db_model.f16_bulls_setup = None
 
             hud = int(self.base_gui.values['ux_jhmcs_hud'])
             pit = int(self.base_gui.values['ux_jhmcs_pit'])
@@ -735,13 +759,13 @@ class AvionicsSetupViperGUI:
             dcs = jhmcs_dc_setup_map[self.base_gui.values['ux_jhmcs_dc_select']]
             jhmcs_setup = f"{hud},{pit},{rwr},{dcs}"
             if jhmcs_setup != "1,1,1,0":
-                self.base_gui.dbase_setup.f16_jhmcs_setup = jhmcs_setup
+                db_model.f16_jhmcs_setup = jhmcs_setup
             else:
-                self.base_gui.dbase_setup.f16_jhmcs_setup = None
+                db_model.f16_jhmcs_setup = None
 
             if db_save:
                 try:
-                    self.base_gui.dbase_setup.save()
+                    db_model.save()
                 except:
                     PyGUI.PopupError("Unable to save miscellaneous information to database?")
             self.is_dirty = False
@@ -819,6 +843,74 @@ class AvionicsSetupViperGUI:
     def do_misc_dirty(self, event):
         self.is_dirty = True
 
+    def do_share_export(self, event):
+        name = self.base_gui.cur_av_setup
+        initial_folder = str(Path.home())
+        default_path = initial_folder + "\\avionics_setup.json"
+        filename = PyGUI.PopupGetFile("Specify a File to Export To",
+                                      f"Exporting Avionics Setup '{name}'",
+                                      initial_folder=initial_folder,
+                                      default_path=default_path,
+                                      default_extension=".json", save_as=True,
+                                      file_types=(("JSON File", "*.json"),))
+        if filename is not None:
+            av_setup = AvionicsSetup(self.base_gui.cur_av_setup, self.base_gui.airframe)
+            if not filename.endswith(".json"):
+                filename += ".json"
+            with open(filename, "w+") as f:
+                f.write(str(av_setup))
+            PyGUI.Popup(f"Avionics setup '{name}' successfullly written to '{filename}'.")
+    
+    def do_share_import(self, event):
+        if self.is_dirty:
+            action = PyGUI.PopupOKCancel(f"You have unsaved changes to the current settings." +
+                                         f" Importing will over-write these changes.",
+                                         title="Unsaved Changes")
+        else:
+            action = PyGUI.PopupOKCancel(f"Importing will over-write the current settings with" +
+                                         f" the values from the import file.",
+                                         title="Overwrite Settings")
+        if action == "OK":
+            path = PyGUI.PopupGetFile("Select a File to Import From",
+                                    "Importing Avionics Settings from File")
+            if path is not None and len(path) > 0:
+                try:
+                    with open(path, "rb") as f:
+                        data = f.read()
+                    str = data.decode("UTF-8")
+                    avs_dict = json.loads(str)
+
+                    self.cur_cmds_prog_sel = 'MAN 1'
+                    self.copy_tacan_core_to_ui(avs_dict.get('tacan_yard'))
+                    self.copy_f16_mfd_core_to_ui(avs_dict.get('f16_mfd_setup_nav'),
+                                                 avs_dict.get('f16_mfd_setup_air'),
+                                                 avs_dict.get('f16_mfd_setup_gnd'),
+                                                 avs_dict.get('f16_mfd_setup_dog'),
+                                                 avs_dict.get('f16_mfd_setup_opt'))
+                    self.copy_f16_cmds_core_to_ui(self.cur_cmds_prog_sel,
+                                                  avs_dict.get('f16_cmds_setup_p1'),
+                                                  avs_dict.get('f16_cmds_setup_p2'),
+                                                  avs_dict.get('f16_cmds_setup_p3'),
+                                                  avs_dict.get('f16_cmds_setup_p4'),
+                                                  avs_dict.get('f16_cmds_setup_p5'),
+                                                  avs_dict.get('f16_cmds_setup_p6'),
+                                                  avs_dict.get('f16_cmds_setup_opt'))
+                    self.copy_f16_misc_core_to_ui(avs_dict.get('f16_bulls_setup'),
+                                                  avs_dict.get('f16_jhmcs_setup'))
+                    self.is_dirty = True
+
+                except:
+                    file = os.path.split(path)[1]
+                    PyGUI.Popup(f"Failed to parse the file '{file}' for import.",
+                                title="Import Fails")
+                    self.is_dirty = False
+                    self.base_gui.values['ux_tmplt_select'] = "DCS Default"
+                    self.base_gui.window['ux_tmplt_select'].update(value="DCS Default")
+                    self.base_gui.do_template_select(None)
+
+            elif path is not None and len(path) == 0:
+                PyGUI.Popup(f"There was no file specified to import.", title="Import Fails")
+
     # field validation
     #
     def val_cmds_prog_field_quantity(self, value, quiet=False):
@@ -860,35 +952,33 @@ class AvionicsSetupViperGUI:
     # airframe-specific template select handler. the core avionics setup code will handle confirming change to
     # dirty templates.
     #
-    def af_do_template_select(self, event, dbase):
-        self.base_gui.dbase_setup = dbase
-
+    def af_do_template_select(self, event):
         self.cur_cmds_prog_sel = 'MAN 1'
         self.base_gui.window['ux_cmds_prog_sel'].update(value=self.cur_cmds_prog_sel)
 
-        self.copy_f16_cmds_dbase_to_ui()
-        self.copy_f16_mfd_dbase_to_ui()
-        self.copy_f16_misc_dbase_to_ui()
-        self.copy_tacan_dbase_to_ui()
+        self.copy_f16_cmds_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_f16_mfd_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_f16_misc_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_tacan_dbase_to_ui(self.base_gui.dbase_setup)
 
     # airframe-specific template save as handler. the core avionics setup code will determine the name to save as
     # and wrap the call in a try/except block to catch failures.
     #
     def af_do_template_save_as(self, event, name):
         self.base_gui.dbase_setup = AvionicsSetupModel.create(name=name)
-        self.copy_f16_cmds_ui_to_dbase(db_save=False)
-        self.copy_f16_mfd_ui_to_dbase(db_save=False)
-        self.copy_f16_misc_ui_to_dbase(db_save=False)
-        self.copy_tacan_ui_to_dbase(db_save=True)
+        self.copy_f16_cmds_ui_to_dbase(self.base_gui.dbase_setup, False)
+        self.copy_f16_mfd_ui_to_dbase(self.base_gui.dbase_setup, False)
+        self.copy_f16_misc_ui_to_dbase(self.base_gui.dbase_setup, False)
+        self.copy_tacan_ui_to_dbase(self.base_gui.dbase_setup, True)
 
     # airframe-specific template update handler. this should not be called on r/o templates (such as the default
     # template).
     #
     def af_do_template_update(self, event):
-        self.copy_f16_cmds_ui_to_dbase(db_save=True)
-        self.copy_f16_mfd_ui_to_dbase(db_save=True)
-        self.copy_f16_misc_ui_to_dbase(db_save=True)
-        self.copy_tacan_ui_to_dbase(db_save=True)
+        self.copy_f16_cmds_ui_to_dbase(self.base_gui.dbase_setup, True)
+        self.copy_f16_mfd_ui_to_dbase(self.base_gui.dbase_setup, True)
+        self.copy_f16_misc_ui_to_dbase(self.base_gui.dbase_setup, True)
+        self.copy_tacan_ui_to_dbase(self.base_gui.dbase_setup, True)
 
     # airframe-specific template delete. the core avionics setup code checks with the user prior to calling this
     # method and will wrap the call in a try/except block to catch failures.
@@ -899,19 +989,19 @@ class AvionicsSetupViperGUI:
         self.is_dirty = False
         self.cur_cmds_prog_sel = 'MAN 1'
         self.base_gui.window['ux_cmds_prog_sel'].update(value=self.cur_cmds_prog_sel)
-        self.copy_f16_cmds_dbase_to_ui()
-        self.copy_f16_mfd_dbase_to_ui()
-        self.copy_f16_misc_dbase_to_ui()
-        self.copy_tacan_dbase_to_ui()
+        self.copy_f16_cmds_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_f16_mfd_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_f16_misc_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_tacan_dbase_to_ui(self.base_gui.dbase_setup)
 
     # helper method to copy values from the database to the ui. current window ui values should be installed prior
     # to calling this method.
     #
     def af_copy_dbase_to_ui(self):
-        self.copy_f16_cmds_dbase_to_ui()
-        self.copy_f16_mfd_dbase_to_ui()
-        self.copy_f16_misc_dbase_to_ui()
-        self.copy_tacan_dbase_to_ui()
+        self.copy_f16_cmds_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_f16_mfd_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_f16_misc_dbase_to_ui(self.base_gui.dbase_setup)
+        self.copy_tacan_dbase_to_ui(self.base_gui.dbase_setup)
 
     # helper method to prepare the airframe gui to run. current window ui values should be installed prior to
     # calling this method. returns a map of ui events to handler functions. the core avionics setup code wraps this
@@ -975,7 +1065,9 @@ class AvionicsSetupViperGUI:
                  'ux_jhmcs_hud' : self.do_misc_dirty,
                  'ux_jhmcs_pit' : self.do_misc_dirty,
                  'ux_jhmcs_rwr' : self.do_misc_dirty,
-                 'ux_jhmcs_dc_select' : self.do_misc_dirty
+                 'ux_jhmcs_dc_select' : self.do_misc_dirty,
+                 'ux_share_export' : self.do_share_export,
+                 'ux_share_import' : self.do_share_import,
         }
 
     # helper method to update airframe-specific gui state.

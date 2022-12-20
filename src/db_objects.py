@@ -286,9 +286,9 @@ class Profile:
         return readable_string
 
     @staticmethod
-    def from_string(profile_string):
+    def from_json_string(str):
         try:
-            profile_data = json.loads(profile_string)
+            profile_data = json.loads(str)
             profile_name = profile_data["name"]
             waypoints = profile_data["waypoints"]
             wps = [Waypoint.to_object(w) for w in waypoints if w['wp_type'] != 'MSN']
@@ -297,7 +297,9 @@ class Profile:
             av_setup_name = profile_data["av_setup_name"]
             profile = Profile(profile_name, waypoints=wps+msns, aircraft=aircraft,
                               av_setup_name=av_setup_name)
-            if profile.profilename:
+            if profile is None:
+                raise Exception("Unable to import profile")
+            elif profile.profilename:
                 profile.save()
             return profile
         except Exception as e:
@@ -410,7 +412,9 @@ class AvionicsSetup:
             except:
                 self.db_model = None
 
-    @property
+    def __str__(self):
+        return json.dumps(self.to_dict())
+
     def to_dict(self):
         avs_dict = dict()
         if self.db_model is not None and self.aircraft == "viper":

@@ -149,9 +149,9 @@ class WaypointEditorGUI:
                                  "DCSWE will not use a callsign for this import.", title="Note")
                 csign = ""
             while True:
-                profile = CombatFliteXML.profile_from_string(str, csign, name, aircraft)
+                profile = CombatFliteXML.profile_from_xml_string(str, csign, name, aircraft)
                 if not profile.has_waypoints and warn:    
-                    flights = CombatFliteXML.flight_names_from_string(str)
+                    flights = CombatFliteXML.flight_names_from_xml_string(str)
                     message = f"Flight unknown. Please select one of the flights defined in " + \
                               f"{os.path.basename(path)} instead"
                     csign = gui_select_from_list(message=message, title=f"{csign} Not Found",
@@ -167,9 +167,14 @@ class WaypointEditorGUI:
                     break
             if self.editor.prefs.is_av_setup_for_unk_bool:
                 profile.av_setup_name = self.editor.prefs.av_setup_default
-            return profile
         else:
-            return Profile.from_string(str)
+            profile = Profile.from_json_string(str)
+            if (profile.av_setup_name not in AvionicsSetupModel.list_all_names() and
+                profile.av_setup_name != "DCS Default" and
+                self.editor.prefs.is_av_setup_for_unk_bool):
+                profile.av_setup_name = self.editor.prefs.av_setup_default
+
+        return profile
 
     def import_profile_commit(self, def_name, tmp_profile):
         name = self.prompt_profile_name("Saving New Profile", def_name, allow_blank=True)
@@ -936,9 +941,7 @@ class WaypointEditorGUI:
         if self.approve_profile_change(action="Importing a new"):
             encoded = pyperclip.paste()
             try:
-                tmp_profile = Profile.from_string(json_unzip(encoded))
-                if tmp_profile is None:
-                    raise Exception("Unable to import profile")
+                tmp_profile = Profile.from_json_string(json_unzip(encoded))
                 #
                 # note that encoded JSON may carry profile name, we will use that as the 
                 # default name for the profile.
@@ -1029,7 +1032,6 @@ class WaypointEditorGUI:
             self.update_for_profile_change(set_to_first=True)
         else:
             self.window['ux_prof_select'].update(value=self.selected_profile)
-
 
     def do_airframe_select(self):
         airframe_type = airframe_ui_text_to_type(self.values['ux_prof_afrm_select'])

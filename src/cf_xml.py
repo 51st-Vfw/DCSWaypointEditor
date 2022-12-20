@@ -148,7 +148,7 @@ class CombatFliteXML:
     # elements
     #
     @staticmethod
-    def flight_names_from_string(str):
+    def flight_names_from_xml_string(str):
         try:
             index = str.index("<?xml version")
             str = str[index:]
@@ -173,7 +173,7 @@ class CombatFliteXML:
     # callsign, if given, should be in the format "<name><number>-<ship>", e.g., "Enfield1-2"
     #
     @staticmethod
-    def profile_from_string(str, callsign="", name="", aircraft="viper"):
+    def profile_from_xml_string(str, callsign="", name="", aircraft="viper"):
         logger.info(f"CF XML from string for '{callsign}' in '{aircraft}'")
 
         match = re.match(r"^(?P<flight>[a-zA-Z]+[\d]+)-(?P<ship>[\d]+)$",

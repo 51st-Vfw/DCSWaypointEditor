@@ -128,7 +128,7 @@ class AvionicsSetupGUI:
             self.dbase_setup = AvionicsSetupModel.get(AvionicsSetupModel.name == self.values[event])
         self.cur_av_setup = self.values['ux_tmplt_select']
         
-        self.airframe_gui.af_do_template_select(event, self.dbase_setup)
+        self.airframe_gui.af_do_template_select(event)
 
     def do_template_save_as(self, event):
         name = PyGUI.PopupGetText("Template Name", "Creating New Template")

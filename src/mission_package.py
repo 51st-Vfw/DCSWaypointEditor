@@ -99,9 +99,9 @@ def dcswe_install_mpack(mpack_path, mpack_name, airframe, callsign, dcs_path):
                     mission_data = f.read()
                 mission_str = mission_data.decode("UTF-8")
                 if CombatFliteXML.is_xml(mission_str):
-                    profile = CombatFliteXML.profile_from_string(mission_str, callsign, "", airframe)
+                    profile = CombatFliteXML.profile_from_xml_string(mission_str, callsign, "", airframe)
                 else:
-                    profile = Profile.from_string(mission_str)
+                    profile = Profile.from_xml_string(mission_str)
                 if not profile.has_waypoints:
                     raise ValueError(f"No waypoints found in the mission package for {callsign}.")
                 logger.info(f"Created mission profile for {mission_path}")
