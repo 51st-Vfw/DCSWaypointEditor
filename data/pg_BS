@@ -1,0 +1,424 @@
+{
+    "waypoints": [
+        {
+	    "latitude": 1.0,
+            "longitude": 1.0,
+            "elevation": 1.0,
+            "name": "[PGBS]-----AIR BASES-----"
+        },
+        {
+            "latitude": 24.245060127601,
+            "longitude": 54.547083816434,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Al Dhafra - PAK 7"
+        },
+        {
+            "latitude": 25.874262366447,
+            "longitude": 55.034348391583,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Abu Musa - PAK 5"
+        },
+        {
+            "latitude": 24.263438253558,
+            "longitude": 55.613340809672,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Al Ain - PAK 7"
+        },
+        {
+            "latitude": 24.889616355297,
+            "longitude": 55.166408715131,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Al Maktoum - PAK 5"
+        },
+        {
+            "latitude": 25.0230628513,
+            "longitude": 55.366937900866,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Al Minhad - PAK 5"
+        },
+        {
+            "latitude": 27.219725907418,
+            "longitude": 56.376890850765,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Bandar Abbas - PAK 3"
+        },
+        {
+            "latitude": 26.534966284785,
+            "longitude": 54.852660765831,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Bandar Lengeh - PAK 3"
+        },
+	{
+            "latitude": 25.6659,
+            "longitude": 57.7951,
+            "elevation": 13,
+            "name": "[PGBS]Bandar-e-jask - PAK 6"
+        },
+        {
+            "latitude": 25.10965689705,
+            "longitude": 56.331910519103,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Fujairah - PAK 6"
+        },
+        {
+            "latitude": 27.155820420902,
+            "longitude": 56.17369393103,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Havadarya - PAK 3"
+        },
+        {
+            "latitude": 26.252338002228,
+            "longitude": 54.514179073682,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Jazireh-ye Farur"
+        },
+        {
+            "latitude": 28.723565745326,
+            "longitude": 57.675051651755,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Jiroft - PAK 1"
+        },
+        {
+            "latitude": 30.275081839795,
+            "longitude": 56.957206391791,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Kerman - PAK 1"
+        },
+        {
+            "latitude": 26.165478766567,
+            "longitude": 56.23745269001,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Khasab - PAK 4"
+        },
+        {
+            "latitude": 26.528273604283,
+            "longitude": 53.98114193093,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Kish - PAK 4"
+        },
+        {
+            "latitude": 27.675039087757,
+            "longitude": 54.389965898672,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Lar - PAK 2"
+        },
+        {
+            "latitude": 26.81114226894,
+            "longitude": 53.353171335735,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Lavan - PAK 4"
+        },
+        {
+            "latitude": 23.6488,
+            "longitude": 53.8205,
+            "elevation": 400,
+            "name": "[PGBS]Liwa - PAK 6"
+        },
+        {
+            "latitude": 26.75806689519,
+            "longitude": 55.902402009607,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Qeshm - PAK 3"
+        },
+        {
+            "latitude": 25.765619807673,
+            "longitude": 55.953745156821,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Ras al Khaimah AF - PAK 4"
+        },
+        {
+            "latitude": 29.536066489988,
+            "longitude": 52.598778359372,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Shiraz - PAK 1"
+        },
+        {
+            "latitude": 25.334555782119,
+            "longitude": 55.518363090778,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Sharjah - PAK 5"
+        },
+        {
+            "latitude": 25.217271909447,
+            "longitude": 54.232775852909,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Sir Abu Nuayr - PAK 5"
+        },
+        {
+            "latitude": 25.901569119189,
+            "longitude": 54.531661654981,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Sirri - PAK 4"
+        },
+        {
+            "latitude": 26.940262190804,
+            "longitude": 56.265998388586,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Sistan"
+        },
+        {
+            "latitude": 26.246671291809,
+            "longitude": 55.23290881434,
+            "elevation": 18.597383499146,
+            "name": "[PGBS]Tunb - PAK 4"
+        },
+        {
+	    "latitude": 1.0,
+            "longitude": 1.0,
+            "elevation": 1.0,
+            "name": "[PGBS]-----ROAD BASES/FARPS-----"
+        },
+        {
+            "latitude": 24.2265,
+            "longitude": 53.7854,
+            "elevation": 43,
+            "name": "[PGBS]Abu Al Abyad - PAK 6"
+        },
+        {
+            "latitude": 25.3076,
+            "longitude": 55.8557,
+            "elevation": 330,
+            "name": "[PGBS]Al Dhaid - PAK 6"
+        },
+        {
+            "latitude": 24.2054,
+            "longitude": 55.1177,
+            "elevation": 429,
+            "name": "[PGBS]Al Khazna - PAK 7"
+        },
+        {
+            "latitude": 24.9943,
+            "longitude": 55.7878,
+            "elevation": 544,
+            "name": "[PGBS]Al Madam - PAK 5"
+        },
+        {
+            "latitude": 25.9466,
+            "longitude": 56.4194,
+            "elevation": 33,
+            "name": "[PGBS]Al Maksuriyah - PAK 4"
+        },
+        {
+            "latitude": 26.9535,
+            "longitude": 55.5925,
+            "elevation": 46,
+            "name": "[PGBS]Bandar Khamir - PAK 3"
+        },
+        {
+            "latitude": 26.6559,
+            "longitude": 55.2726,
+            "elevation": 24,
+            "name": "[PGBS]Basa'idu - PAK 3"
+        },
+        {
+            "latitude": 27.5273,
+            "longitude": 56.7448,
+            "elevation": 166,
+            "name": "[PGBS]Chahestan - PAK 2"
+        },
+        {
+            "latitude": 27.3058,
+            "longitude": 54.6485,
+            "elevation": 1298,
+            "name": "[PGBS]Dehong - PAK 2"
+        },
+        {
+            "latitude": 25.6100,
+            "longitude": 56.2808,
+            "elevation": 9,
+            "name": "[PGBS]Dibba Al-Hisn - PAK 6"
+        },
+        {
+            "latitude": 28.7217,
+            "longitude": 57.1589,
+            "elevation": 5564,
+            "name": "[PGBS]Dowlatabad - PAK 1"
+        },
+        {
+            "latitude": 24.7756,
+            "longitude": 54.6896,
+            "elevation": 7,
+            "name": "[PGBS]EMAL - PAK 7"
+        },
+        {
+            "latitude": 24.7505,
+            "longitude": 56.4678,
+            "elevation": 5,
+            "name": "[PGBS]Falara - PAK 5"
+        },
+        {
+            "latitude": 28.9248,
+            "longitude": 53.6161,
+            "elevation": 4532,
+            "name": "[PGBS]Fasa - PAK 1"
+        },
+        {
+            "latitude": 24.7908,
+            "longitude": 56.1363,
+            "elevation": 1103,
+            "name": "[PGBS]Hatta - PAK 5"
+        },
+        {
+            "latitude": 26.2534,
+            "longitude": 54.5137,
+            "elevation": 35,
+            "name": "[PGBS]Jazireh-ye Farur - PAK 4"
+        },
+        {
+            "latitude": 27.0110,
+            "longitude": 54.3033,
+            "elevation": 1091,
+            "name": "[PGBS]Jenah - PAK 3"
+        },
+        {
+            "latitude": 28.2706,
+            "longitude": 53.9730,
+            "elevation": 2910,
+            "name": "[PGBS]Juyom - PAK 2"
+        },
+        {
+            "latitude": 29.2705,
+            "longitude": 52.9777,
+            "elevation": 4815,
+            "name": "[PGBS]Khar Zahreh - PAK 1"
+        },
+        {
+            "latitude": 27.5416,
+            "longitude": 54.9969,
+            "elevation": 1692,
+            "name": "[PGBS]Khund - PAK 2"
+        },
+        {
+            "latitude": 25.8194,
+            "longitude": 57.3062,
+            "elevation": 15,
+            "name": "[PGBS]Kuh - PAK 6"
+        },
+        {
+            "latitude": 27.0473,
+            "longitude": 54.9070,
+            "elevation": 606,
+            "name": "[PGBS]Lemazan - PAK 3"
+        },
+        {
+            "latitude": 23.7883,
+            "longitude": 54.4287,
+            "elevation": 322,
+            "name": "[PGBS]Maharqah - PAK 6"
+        },
+        {
+            "latitude": 27.0075,
+            "longitude": 56.9744,
+            "elevation": 25,
+            "name": "[PGBS]Minab - PAK 3"
+        },
+        {
+            "latitude": 25.2914,
+            "longitude": 56.3686,
+            "elevation": 17,
+            "name": "[PGBS]Murbah - PAK 6"
+        },
+        {
+            "latitude": 28.3707,
+            "longitude": 57.2289,
+            "elevation": 4882,
+            "name": "[PGBS]Muredan - PAK 2"
+        },
+        {
+            "latitude": 29.7466,
+            "longitude": 56.6938,
+            "elevation": 6927,
+            "name": "[PGBS]Negar - PAK 1"
+        },
+        {
+            "latitude": 28.2903,
+            "longitude": 56.6388,
+            "elevation": 3570,
+            "name": "[PGBS]Qaderabad - PAK 2"
+        },
+        {
+            "latitude": 27.8857,
+            "longitude": 53.8846,
+            "elevation": 2608,
+            "name": "[PGBS]Qalat - PAK 2"
+        },
+        {
+            "latitude": 25.8742,
+            "longitude": 56.0456,
+            "elevation": 76,
+            "name": "[PGBS]Ras al Khaimah FARP - PAK 4"
+        },
+        {
+            "latitude": 29.5784,
+            "longitude": 57.4335,
+            "elevation": 7321,
+            "name": "[PGBS]Rayen - PAK 1"
+        },
+        {
+            "latitude": 27.3571,
+            "longitude": 55.5017,
+            "elevation": 585,
+            "name": "[PGBS]Rudbar - PAK 3"
+        },
+        {
+            "latitude": 26.5257,
+            "longitude": 57.0986,
+            "elevation": 28,
+            "name": "[PGBS]Seerik - PAK 6"
+        },
+        {
+            "latitude": 26.5902,
+            "longitude": 57.8634,
+            "elevation": 3221,
+            "name": "[PGBS]Senderk - PAK 6"
+        },
+        {
+            "latitude": 27.7598,
+            "longitude": 56.3478,
+            "elevation": 2115,
+            "name": "[PGBS]Seyahu - PAK 2"
+        },
+        {
+            "latitude": 26.9406,
+            "longitude": 56.2669,
+            "elevation": 88,
+            "name": "[PGBS]Sistan - PAK 3"
+        },
+	{
+            "latitude": 25.5219,
+            "longitude": 55.5269,
+            "elevation": 11,
+            "name": "[PGBS]Umm Al Quwain - PAK 5"
+        },
+	{
+            "latitude": 24.5542,
+            "longitude": 55.0074,
+            "elevation": 274,
+            "name": "[PGBS]Zayed Military City - PAK 6"
+        },
+        {
+	    "latitude": 1.0,
+            "longitude": 1.0,
+            "elevation": 1.0,
+            "name": "[PGBS]-----SAM SITES-----"
+        },
+        {
+            "latitude": 27.6262,
+            "longitude": 55.9012,
+            "elevation": 1015,
+            "name": "[PGBS]Fin - Pak 3"
+        },
+        {
+            "latitude": 26.1693,
+            "longitude": 57.7535,
+            "elevation": 772,
+            "name": "[PGBS]Jaquarad - Pak 6"
+        },
+        {
+            "latitude": 24.6379,
+            "longitude": 55.6073,
+            "elevation": 776,
+            "name": "[PGBS]Nahel - Pak 5"
+        }
+    ]
+}
