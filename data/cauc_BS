@@ -1,0 +1,622 @@
+{
+  "waypoints": [
+    {
+      "latitude": 1.0,
+      "longitude": 1.0,
+      "elevation": 1.0,
+      "name": "[CaBS]-----AIRFIELDS-----"
+    },
+    {
+      "latitude": 41.6111,
+      "longitude": 41.5961,
+      "elevation": 33,
+      "name": "[CaBS]Batumi - PAK 11"
+    },
+    {
+      "latitude": 43.2042,
+      "longitude": 44.6018,
+      "elevation": 1722,
+      "name": "[CaBS]Beslan - PAK 4"
+    },
+    {
+      "latitude": 43.1128,
+      "longitude": 40.5715,
+      "elevation": 69,
+      "name": "[CaBS]Gudauta - PAK 9"
+    },
+    {
+      "latitude": 41.9289,
+      "longitude": 41.8621,
+      "elevation": 59,
+      "name": "[CaBS]Kobuleti - PAK 11"
+    },
+    {
+      "latitude": 45.087,
+      "longitude": 38.9375,
+      "elevation": 98,
+      "name": "[CaBS]Krasnodar Center - PAK 1"
+    },
+    {
+      "latitude": 42.1758,
+      "longitude": 42.4805,
+      "elevation": 148,
+      "name": "[CaBS]Kutaisi - PAK 11"
+    },
+    {
+      "latitude": 44.6808,
+      "longitude": 40.0388,
+      "elevation": 591,
+      "name": "[CaBS]Maykop - PAK 1"
+    },
+    {
+      "latitude": 43.7912,
+      "longitude": 44.5998,
+      "elevation": 508,
+      "name": "[CaBS]Mozdok - PAK 4"
+    },
+    {
+      "latitude": 43.5166,
+      "longitude": 43.6393,
+      "elevation": 1411,
+      "name": "[CaBS]Nalchik - PAK 4"
+    },
+    {
+      "latitude": 42.2408,
+      "longitude": 42.0478,
+      "elevation": 43,
+      "name": "[CaBS]Senaki - PAK 11"
+    },
+    {
+      "latitude": 43.4457,
+      "longitude": 39.9452,
+      "elevation": 98,
+      "name": "[CaBS]Sochi - PAK 9"
+    },
+    {
+      "latitude": 42.8653,
+      "longitude": 41.1161,
+      "elevation": 43,
+      "name": "[CaBS]Sukhumi - PAK 10"
+    },
+    {
+      "latitude": 41.6691,
+      "longitude": 44.9580,
+      "elevation": 1574,
+      "name": "[CaBS]Tblisi - PAK 12"
+    },
+    {
+      "latitude": 44.2280,
+      "longitude": 43.0792,
+      "elevation": 1050,
+      "name": "[CaBS]Mineralnye Vody - PAK 3"
+    },
+    {
+      "latitude": 1.0,
+      "longitude": 1.0,
+      "elevation": 1.0,
+      "name": "[CaBS]-----ROADBASES/FARPS-----"
+    },
+    {
+      "latitude": 42.5351,
+      "longitude": 43.1142,
+      "elevation": 1665,
+      "name": "[CaBS]Ambrolauri - PAK 8"
+    },
+    {
+      "latitude": 43.5592,
+      "longitude": 41.2841,
+      "elevation": 4909,
+      "name": "[CaBS]Arhyz - PAK 6"
+    },
+    {
+      "latitude": 42.7886,
+      "longitude": 44.0016,
+      "elevation": 3996,
+      "name": "[CaBS]Buron - PAK 4"
+    },
+    {
+      "latitude": 44.2348,
+      "longitude": 39.7767,
+      "elevation": 1143,
+      "name": "[CaBS]Chernigovskoe - PAK 5"
+    },
+    {
+      "latitude": 43.1953,
+      "longitude": 43.9569,
+      "elevation": 2197,
+      "name": "[CaBS]Chikola - PAK 4"
+    },
+    {
+      "latitude": 42.5383,
+      "longitude": 44.2136,
+      "elevation": 6185,
+      "name": "[CaBS]Edisa - PAK 8"
+    },
+    {
+      "latitude": 42.7626,
+      "longitude": 43.5094,
+      "elevation": 4463,
+      "name": "[CaBS]Edisa - PAK 8"
+    },
+    {
+      "latitude": 43.7293,
+      "longitude": 42.9370,
+      "elevation": 3043,
+      "name": "[CaBS]Habaz - PAK 3"
+    },
+    {
+      "latitude": 42.3592,
+      "longitude": 43.9005,
+      "elevation": 3457,
+      "name": "[CaBS]Java - PAK 8"
+    },
+    {
+      "latitude": 42.6287,
+      "longitude": 44.6187,
+      "elevation": 5531,
+      "name": "[CaBS]Kazbegi - PAK 8"
+    },
+    {
+      "latitude": 43.6875,
+      "longitude": 40.2405,
+      "elevation": 1715,
+      "name": "[CaBS]Krasnaya - PAK 9"
+    },
+    {
+      "latitude": 43.9664,
+      "longitude": 42.2911,
+      "elevation": 3319,
+      "name": "[CaBS]Krasnovostochnyy - PAK 2"
+    },
+    {
+      "latitude": 42.5889,
+      "longitude": 42.2748,
+      "elevation": 926,
+      "name": "[CaBS]Kuizu - PAK 10"
+    },
+    {
+      "latitude": 41.9894,
+      "longitude": 43.6368,
+      "elevation": 2252,
+      "name": "[CaBS]Khashuri - PAK 11"
+    },
+    {
+      "latitude": 44.2833,
+      "longitude": 41.5757,
+      "elevation": 1628,
+      "name": "[CaBS]Malot - PAK 2"
+    },
+    {
+      "latitude": 44.1195,
+      "longitude": 40.8241,
+      "elevation": 2025,
+      "name": "[CaBS]Psebay - PAK 6"
+    },
+    {
+      "latitude": 42.6646,
+      "longitude": 41.6762,
+      "elevation": 154,
+      "name": "[CaBS]Sabuli - PAK 10"
+    },
+    {
+      "latitude": 44.7277,
+      "longitude": 39.2130,
+      "elevation": 233,
+      "name": "[CaBS]Saratovskays - PAK 1"
+    },
+    {
+      "latitude": 42.7950,
+      "longitude": 42.9886,
+      "elevation": 3946,
+      "name": "[CaBS]Sasashi - PAK 8"
+    },
+    {
+      "latitude": 42.1143,
+      "longitude": 44.9523,
+      "elevation": 3667,
+      "name": "[CaBS]Tianeti - PAK 12"
+    },
+    {
+      "latitude": 42.0470,
+      "longitude": 42.8486,
+      "elevation": 5225,
+      "name": "[CaBS]Tsvirmi - PAK 7"
+    },
+    {
+      "latitude": 43.4577,
+      "longitude": 42.0960,
+      "elevation": 4586,
+      "name": "[CaBS]Uckulan - PAK 7"
+    },
+    {
+      "latitude": 43.8726,
+      "longitude": 41.6360,
+      "elevation": 3181,
+      "name": "[CaBS]Zelenchukskaya - PAK 6"
+    },
+    {
+      "latitude": 43.1077,
+      "longitude": 41.7502,
+      "elevation": 2077,
+      "name": "[CaBS]Zemo-Azhara - PAK 7"
+    },
+    {
+      "latitude": 1.0,
+      "longitude": 1.0,
+      "elevation": 1.0,
+      "name": "[CaBS]-----ARMY/FUEL BASES-----"
+    },
+    {
+      "latitude": 43.426,
+      "longitude": 44.7684,
+      "elevation": 1277,
+      "name": "[CaBS]Achaluki - PAK 4"
+    },
+    {
+      "latitude": 43.0681,
+      "longitude": 44.2274,
+      "elevation": 1818,
+      "name": "[CaBS]Alagir - PAK 4"
+    },
+    {
+      "latitude": 42.4924,
+      "longitude": 44.4616,
+      "elevation": 7057,
+      "name": "[CaBS]Almasiani - PAK 8"
+    },
+    {
+      "latitude": 43.0349,
+      "longitude": 41.3202,
+      "elevation": 1317,
+      "name": "[CaBS]Amtkel - PAK 9"
+    },
+    {
+      "latitude": 43.6828,
+      "longitude": 43.5047,
+      "elevation": 1560,
+      "name": "[CaBS]Baksan - PAK 3"
+    },
+    {
+      "latitude": 44.2422,
+      "longitude": 41.1759,
+      "elevation": 2101,
+      "name": "[CaBS]Besstrashnaya - PAK 2"
+    },
+    {
+      "latitude": 43.1798,
+      "longitude": 40.3301,
+      "elevation": 16,
+      "name": "[CaBS]Bzyb - PAK 9"
+    },
+    {
+      "latitude": 44.3775,
+      "longitude": 40.0228,
+      "elevation": 1039,
+      "name": "[CaBS]Dagestanskaya - PAK 5"
+    },
+    {
+      "latitude": 44.2160,
+      "longitude": 40.1966,
+      "elevation": 1738,
+      "name": "[CaBS]Dahovskaya - PAK 5"
+    },
+    {
+      "latitude": 41.9806,
+      "longitude": 43.3529,
+      "elevation": 1739,
+      "name": "[CaBS]Deisi - PAK 11"
+    },
+    {
+      "latitude": 42.7210,
+      "longitude": 42.0461,
+      "elevation": 1034,
+      "name": "[CaBS]Dzhvari - PAK 10"
+    },
+    {
+      "latitude": 43.2597,
+      "longitude": 42.6534,
+      "elevation": 5784,
+      "name": "[CaBS]Elbrus - PAK 7"
+    },
+    {
+      "latitude": 44.5810,
+      "longitude": 39.7059,
+      "elevation": 617,
+      "name": "[CaBS]Erik - PAK 1"
+    },
+    {
+      "latitude":42.3691,
+      "longitude":43.7665,
+      "elevation":5821,
+      "name": "[CaBS]Ertso - PAK 8"
+    },
+    {
+      "latitude":44.0530,
+      "longitude":42.8935,
+      "elevation":1932,
+      "name": "[CaBS]Essentuki - PAK 3"
+    },
+    {
+      "latitude":41.9820,
+      "longitude":44.1279,
+      "elevation":1989,
+      "name": "[CaBS]Gori - PAK 12"
+    },
+    {
+      "latitude":44.3802,
+      "longitude":40.7712,
+      "elevation":1276,
+      "name": "[CaBS]Gubskaya - PAK 2"
+    },
+    {
+      "latitude":44.6544,
+      "longitude":39.6066,
+      "elevation":334,
+      "name": "[CaBS]Guriyskaya - PAK 1"
+    },
+    {
+      "latitude":44.0026,
+      "longitude":40.1388,
+      "elevation":2279,
+      "name": "[CaBS]Guzerip - PAK 5"
+    },
+    {
+      "latitude":43.7657,
+      "longitude":41.9034,
+      "elevation":3000,
+      "name": "[CaBS]Karachaevsk - PAK 6"
+    },
+    {
+      "latitude":42.9656,
+      "longitude":42.1945,
+      "elevation":2231,
+      "name": "[CaBS]Khaishi - PAK 7"
+    },
+    {
+      "latitude":43.8913,
+      "longitude":42.7002,
+      "elevation":3030,
+      "name": "[CaBS]Kislovodsk - PAK 3"
+    },
+    {
+      "latitude":44.0402,
+      "longitude":41.9511,
+      "elevation":2154,
+      "name": "[CaBS]Kubina - PAK 2"
+    },
+    {
+      "latitude":44.4858,
+      "longitude":40.9631,
+      "elevation":989,
+      "name": "[CaBS]Kurdzhipskaya - PAK 5"
+    },
+    {
+      "latitude":44.6644,
+      "longitude":40.3117,
+      "elevation":745,
+      "name": "[CaBS]Kuzhorskaya - PAK 1"
+    },
+    {
+      "latitude":43.0347,
+      "longitude":41.5400,
+      "elevation":1268,
+      "name": "[CaBS]Kvabchara - PAK 10"
+    },
+    {
+      "latitude":44.6565,
+      "longitude":40.6642,
+      "elevation":820,
+      "name": "[CaBS]Labinsk - PAK 2"
+    },
+    {
+      "latitude":43.5675,
+      "longitude":43.2188,
+      "elevation":2509,
+      "name": "[CaBS]Lashkuta - PAK 3"
+    },
+    {
+      "latitude":43.0097,
+      "longitude":40.9453,
+      "elevation":19,
+      "name": "[CaBS]Lechkop - PAK 9"
+    },
+    {
+      "latitude":42.7914,
+      "longitude":42.7196,
+      "elevation":2382,
+      "name": "[CaBS]Lentehi - PAK 7"
+    },
+    {
+      "latitude":43.6462,
+      "longitude":44.5054,
+      "elevation":605,
+      "name": "[CaBS]Mozdok Refinery - PAK 4"
+    },
+    {
+      "latitude":41.9642,
+      "longitude":44.5677,
+      "elevation":2035,
+      "name": "[CaBS]Mukhrani - PAK 12"
+    },
+    {
+      "latitude":43.6841,
+      "longitude":41.4691,
+      "elevation":3751,
+      "name": "[CaBS]Nizh Arhyz - PAK 6"
+    },
+    {
+      "latitude":43.9667,
+      "longitude":43.6599,
+      "elevation":1016,
+      "name": "[CaBS]Novopavlovsk - PAK 3"
+    },
+    {
+      "latitude":42.5801,
+      "longitude":43.4461,
+      "elevation":2792,
+      "name": "[CaBS]Oni - PAK 8"
+    },
+    {
+      "latitude":43.4899,
+      "longitude":40.5373,
+      "elevation":3274,
+      "name": "[CaBS]Ozero - PAK 9"
+    },
+    {
+      "latitude":42.3234,
+      "longitude":44.6837,
+      "elevation":3284,
+      "name": "[CaBS]Pasanauri - PAK 12"
+    },
+    {
+      "latitude":44.4144,
+      "longitude":40.1934,
+      "elevation":1093,
+      "name": "[CaBS]Pervomayskiy - PAK 5"
+    },
+    {
+      "latitude":43.6007,
+      "longitude":40.9255,
+      "elevation":4298,
+      "name": "[CaBS]Pkhiya - PAK 6"
+    },
+    {
+      "latitude":43.9383,
+      "longitude":41.1943,
+      "elevation":2830,
+      "name": "[CaBS]Pregradnaya - PAK 6"
+    },
+    {
+      "latitude":43.7584,
+      "longitude":44.0533,
+      "elevation":664,
+      "name": "[CaBS]Prohladniy - PAK 4"
+    },
+    {
+      "latitude":44.7104,
+      "longitude":39.7877,
+      "elevation":461,
+      "name": "[CaBS]Pshehskaya - PAK 1"
+    },
+    {
+      "latitude":43.8144,
+      "longitude":40.9106,
+      "elevation":3233,
+      "name": "[CaBS]Rozhkao - PAK 6"
+    },
+    {
+      "latitude":42.3327,
+      "longitude":43.4118,
+      "elevation":1447,
+      "name": "[CaBS]Sachhere - PAK 11"
+    },
+    {
+      "latitude":44.1818,
+      "longitude":42.6551,
+      "elevation":1566,
+      "name": "[CaBS]Suvorovskaya - PAK 3"
+    },
+    {
+      "latitude":43.4506,
+      "longitude":41.7379,
+      "elevation":4461,
+      "name": "[CaBS]Teberda - PAK 7"
+    },
+    {
+      "latitude":43.4753,
+      "longitude":44.1573,
+      "elevation":847,
+      "name": "[CaBS]Terek - PAK 4"
+    },
+    {
+      "latitude":42.8542,
+      "longitude":41.6311,
+      "elevation":561,
+      "name": "[CaBS]Tkvarcheli - PAK 10"
+    },
+    {
+      "latitude":42.5917,
+      "longitude":42.7019,
+      "elevation":1451,
+      "name": "[CaBS]Tsiperchi - PAK 11"
+    },
+    {
+      "latitude":42.2106,
+      "longitude":43.9936,
+      "elevation":2790,
+      "name": "[CaBS]Tskhinvali - PAK 12"
+    },
+    {
+      "latitude":43.3877,
+      "longitude":42.9211,
+      "elevation":4516,
+      "name": "[CaBS]Tyrnyauz - PAK 7"
+    },
+    {
+      "latitude":44.3531,
+      "longitude":42.4741,
+      "elevation":1660,
+      "name": "[CaBS]Udarnyy - PAK 2"
+    },
+    {
+      "latitude":43.0073,
+      "longitude":44.6690,
+      "elevation":2336,
+      "name": "[CaBS]Vladikavkaz - PAK 4"
+    },
+    {
+      "latitude":41.8294,
+      "longitude":44.7500,
+      "elevation":1725,
+      "name": "[CaBS]Zages - PAK 12"
+    },
+    {
+      "latitude":42.1223,
+      "longitude":42.0148,
+      "elevation":530,
+      "name": "[CaBS]Zestafoni - PAK 11"
+    },
+    {
+      "latitude":42.1439,
+      "longitude":44.7706,
+      "elevation":2565,
+      "name": "[CaBS]Zhinvali - PAK 12"
+    },
+    {
+      "latitude":42.4854,
+      "longitude":41.8144,
+      "elevation":198,
+      "name": "[CaBS]Zugdidi - PAK 10"
+    },
+    {
+      "latitude":1.0,
+      "longitude":1.0,
+      "elevation":1.0,
+      "name": "[CaBS]-----SAM SITES/ARRAYS-----"
+    },
+    {
+      "latitude":44.4533,
+      "longitude":39.7026,
+      "elevation":729,
+      "name": "[CaBS]Apsheronsk - PAK 5"
+    },
+    {
+      "latitude":44.2633,
+      "longitude":42.0671,
+      "elevation":1657,
+      "name": "[CaBS]Cherkessk - PAK 2"
+    },
+    {
+      "latitude":43.3034,
+      "longitude":40.2586,
+      "elevation":165,
+      "name": "[CaBS]Gagra - PAK 9"
+    },
+    {
+      "latitude":41.9346,
+      "longitude":44.3921,
+      "elevation":1724,
+      "name": "[CaBS]Kapsi - PAK 12"
+    }
+  ]
+}
