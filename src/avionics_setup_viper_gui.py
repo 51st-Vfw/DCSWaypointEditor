@@ -577,6 +577,7 @@ class AvionicsSetupViperGUI:
                 for cmds_param in cmds_params:
                     self.base_gui.window[f"ux_cmds_{cmds_type}_{cmds_param}"].update("")
         else:
+            print(f"CMDS f{value}")
             self.base_gui.window['ux_cmds_reconfig'].update(value=True)
             self.base_gui.values['ux_cmds_reconfig'] = True
             types = value.split(";")
@@ -717,7 +718,7 @@ class AvionicsSetupViperGUI:
                     db_model.save()
                 except:
                     PyGUI.PopupError("Unable to save CMDS setup information to database?")
-            self.copy_f16_cmds_dbase_to_ui()
+            self.copy_f16_cmds_dbase_to_ui(db_model)
 
 
     # synchronize F-16 Miscellaneous setup UI and database
@@ -847,19 +848,19 @@ class AvionicsSetupViperGUI:
         name = self.base_gui.cur_av_setup
         initial_folder = str(Path.home())
         default_path = initial_folder + "\\avionics_setup.json"
-        filename = PyGUI.PopupGetFile("Specify a File to Export To",
+        path = PyGUI.PopupGetFile("Specify a File to Export To",
                                       f"Exporting Avionics Setup '{name}'",
                                       initial_folder=initial_folder,
                                       default_path=default_path,
                                       default_extension=".json", save_as=True,
                                       file_types=(("JSON File", "*.json"),))
-        if filename is not None:
+        if path is not None:
             av_setup = AvionicsSetup(self.base_gui.cur_av_setup, self.base_gui.airframe)
-            if not filename.endswith(".json"):
-                filename += ".json"
-            with open(filename, "w+") as f:
+            if not path.endswith(".json"):
+                path += ".json"
+            with open(path, "w+") as f:
                 f.write(str(av_setup))
-            PyGUI.Popup(f"Avionics setup '{name}' successfullly written to '{filename}'.")
+            PyGUI.Popup(f"Avionics setup '{name}' successfullly written to '{path}'.")
     
     def do_share_import(self, event):
         if self.is_dirty:
@@ -880,14 +881,13 @@ class AvionicsSetupViperGUI:
                     str = data.decode("UTF-8")
                     avs_dict = json.loads(str)
 
-                    self.cur_cmds_prog_sel = 'MAN 1'
                     self.copy_tacan_core_to_ui(avs_dict.get('tacan_yard'))
                     self.copy_f16_mfd_core_to_ui(avs_dict.get('f16_mfd_setup_nav'),
                                                  avs_dict.get('f16_mfd_setup_air'),
                                                  avs_dict.get('f16_mfd_setup_gnd'),
                                                  avs_dict.get('f16_mfd_setup_dog'),
                                                  avs_dict.get('f16_mfd_setup_opt'))
-                    self.copy_f16_cmds_core_to_ui(self.cur_cmds_prog_sel,
+                    self.copy_f16_cmds_core_to_ui(None,
                                                   avs_dict.get('f16_cmds_setup_p1'),
                                                   avs_dict.get('f16_cmds_setup_p2'),
                                                   avs_dict.get('f16_cmds_setup_p3'),
@@ -897,6 +897,9 @@ class AvionicsSetupViperGUI:
                                                   avs_dict.get('f16_cmds_setup_opt'))
                     self.copy_f16_misc_core_to_ui(avs_dict.get('f16_bulls_setup'),
                                                   avs_dict.get('f16_jhmcs_setup'))
+
+                    PyGUI.Popup(f"Avionics setup '{self.base_gui.cur_av_setup}' successfullly" +
+                                f" imported from '{path}'.")
                     self.is_dirty = True
 
                 except:
@@ -966,7 +969,7 @@ class AvionicsSetupViperGUI:
     #
     def af_do_template_save_as(self, event, name):
         self.base_gui.dbase_setup = AvionicsSetupModel.create(name=name)
-        self.copy_f16_cmds_ui_to_dbase(self.base_gui.dbase_setup, False)
+        self.copy_f16_cmds_ui_to_dbase(self.base_gui.dbase_setup, None, False)
         self.copy_f16_mfd_ui_to_dbase(self.base_gui.dbase_setup, False)
         self.copy_f16_misc_ui_to_dbase(self.base_gui.dbase_setup, False)
         self.copy_tacan_ui_to_dbase(self.base_gui.dbase_setup, True)
@@ -975,7 +978,7 @@ class AvionicsSetupViperGUI:
     # template).
     #
     def af_do_template_update(self, event):
-        self.copy_f16_cmds_ui_to_dbase(self.base_gui.dbase_setup, True)
+        self.copy_f16_cmds_ui_to_dbase(self.base_gui.dbase_setup, None, True)
         self.copy_f16_mfd_ui_to_dbase(self.base_gui.dbase_setup, True)
         self.copy_f16_misc_ui_to_dbase(self.base_gui.dbase_setup, True)
         self.copy_tacan_ui_to_dbase(self.base_gui.dbase_setup, True)

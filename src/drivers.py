@@ -1073,11 +1073,11 @@ class ViperDriver(Driver):
             self.icp_btn("ENTR", delay_release=0.15)        # Commit field value
         self.icp_data('DN', delay_after=0.15)               # Advance to next field
 
-    def enter_cmds_prog(self, type, prog, dflt, command_q=None, progress_q=None):
+    def enter_cmds_prog(self, prog_num, type, prog, dflt, command_q=None, progress_q=None):
         if prog is not None and prog != dflt:
             self.bkgnd_advance(command_q, progress_q)
 
-            self.logger.info(f"Entering CMDS {type} program: <{prog}>, <{dflt}> default")
+            self.logger.info(f"Entering CMDS program P{prog_num} {type}: <{prog}>, <{dflt}> default")
             fields = prog.split(",")
             dflts = dflt.split(",")
 
@@ -1087,7 +1087,7 @@ class ViperDriver(Driver):
             self.enter_cmds_prog_elem(fields[3], dflts[3])  # SI field
 
         else:
-            self.logger.info(f"Skipping unchanged CMDS {type} program")
+            self.logger.info(f"Skipping unchanged CMDS program P{prog_num} {type}")
             sleep(0.35)
 
         self.icp_ded("UP", delay_after=0.25)            # Increment program number
@@ -1105,15 +1105,19 @@ class ViperDriver(Driver):
 
             types = [ "Chaff", "Flare" ]
             for type in types:
+                prog_num = 1
                 for prog in progs:
                     if prog[0] is not None:
-                        self.enter_cmds_prog(type,
+                        self.enter_cmds_prog(prog_num, type,
                                              prog[0].split(";")[types.index(type)],
                                              prog[1].split(";")[types.index(type)],
                                              command_q=command_q, progress_q=progress_q)
                     else:
-                        self.enter_cmds_prog(type, None, None, command_q=command_q, progress_q=progress_q)
-                self.icp_data('SEQ', delay_after=0.35)      # CHAFF --> FLARE
+                        self.enter_cmds_prog(prog_num, type, None, None,
+                                             command_q=command_q, progress_q=progress_q)
+                    prog_num += 1
+                if type == "Chaff":
+                    self.icp_data('SEQ', delay_after=0.35)  # CHAFF --> FLARE
 
             self.icp_data("RTN")
 
@@ -1183,14 +1187,15 @@ class ViperDriver(Driver):
         # order and set up according to optimized setting.
         #
         cmds_progs = [ ]
-        for pgm_num in range(1,6):
+        for pgm_num in range(1,7):
             pgm_name = f"f16_cmds_setup_p{pgm_num}"
             dfl_name = f"f16_cmds_setup_p{pgm_num}_dflt"
             if avs_dict.get('f16_cmds_setup_opt') == True:
                 dfl = avs_dict.get(dfl_name)
             else:
-                dfl = "0,0,0,0;0,0,0,0"
+                dfl = "-1,-1,-1,-1;-1,-1,-1,-1"
             cmds_progs.append((avs_dict.get(pgm_name), dfl))
+        print(cmds_progs)
 
         # build dictionary of tuples ( setup, default ) for each mfd setup. dictionary is set
         # up according to optimized setting.
