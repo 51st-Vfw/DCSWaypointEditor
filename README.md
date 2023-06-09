@@ -17,6 +17,10 @@ of DCSWE. See the
 [documentation](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/README.md)
 in the repository for detailed documentation.
 
+This 51st VFW DCSWaypointEditor is a fork of Santi871's
+[DCSWaypointEditor](https://github.com/Santi871/DCSWaypointEditor)
+application and based on Santi871's work.
+
 ## Building & Installing
 
 See the
