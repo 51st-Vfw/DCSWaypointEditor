@@ -2,7 +2,7 @@
 *
 *  gui_util.py: GUI utilities and support
 *
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-23 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -115,6 +115,27 @@ def gui_new_install_request(data_path):
         return True
     else:
         return False
+
+# handle a request to update DCS-BIOS configuration file. returns True if accepted, False otherwise.
+#
+def gui_update_dcsbios_cfg_request(install_fn):
+    message = f"To allow cockpit buttons to trigger DCSWE profile loads and better operate with DCSWE," + \
+              f" the DCS-BIOS configuration file BIOSConfig.lua should be updated.\n\n" + \
+              f" Update this file (current file will be backed up)?"
+    if PyGUI.PopupYesNo(message, title="Update DCS-BIOS Configuration") == "Yes":
+        logger.info(f"DCS-BIOS config update accepted")
+        try:
+            result = install_fn()
+        except Exception as e:
+            result = False
+        if not result:
+            PyGUI.Popup(f"DCS-BIOS BIOSConfig.lua was successfully updated.", title="Success")
+            return True
+        else:
+            PyGUI.Popup(f"DCS-BIOS BIOSConfig.lua udpate failed.", title="Error")
+    else:
+        logger.info(f"DCS-BIOS config update declined")
+    return False
 
 # run a background operation with a modal progress ui.
 #
