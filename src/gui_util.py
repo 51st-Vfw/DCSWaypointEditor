@@ -200,7 +200,8 @@ def gui_backgrounded_operation(title, bop_fn=None, bop_args=None):
         if not bop_thread.is_alive() and progress_q.empty():
             logger.debug("Backgrounded op thread has passed beyond the veil")
             break
-        elif gui_is_dcs_foreground() and (window is None):
+        elif not gui_is_dcs_foreground() and (window is None):
+            logger.debug(f"Build progress window, fg {GetWindowText(GetForegroundWindow())}")
             window = PyGUI.Window(title, layout, modal=True, finalize=True, disable_close=True)
             window['ux_progress'].update(progress)
 
