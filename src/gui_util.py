@@ -137,6 +137,27 @@ def gui_update_dcsbios_cfg_request(install_fn):
         logger.info(f"DCS-BIOS config update declined")
     return False
 
+# check if the foreground window is DCS.
+#
+def gui_is_dcs_foreground():
+        fgwin_title = GetWindowText(GetForegroundWindow())
+        if (fgwin_title != "Digital Combat Simulator" and
+            fgwin_title != "DCS.openbeta" and
+            fgwin_title != "DCS"):
+            return False
+        return True
+
+# use psutil to figure out if DCS is running, potentially notifing user if not.
+#
+def gui_verify_dcs_running(message=None, is_notify=True):
+    try:
+        is_running = "DCS.exe" in (proc.name() for proc in psutil.process_iter())
+    except:
+        is_running = False
+    if not is_running and is_notify:
+        PyGUI.Popup(f"{message}DCS is not currently running.", title="Error")
+    return is_running
+
 # run a background operation with a modal progress ui.
 #
 # the backgrounded operation (bop_fn) must take two named args: progress_q and cancel_q in
@@ -176,13 +197,10 @@ def gui_backgrounded_operation(title, bop_fn=None, bop_args=None):
     # background. once DCS is not frontmost, we'll create the window and continue.
     #
     while True:
-        fgwin_title = GetWindowText(GetForegroundWindow())
         if not bop_thread.is_alive() and progress_q.empty():
             logger.debug("Backgrounded op thread has passed beyond the veil")
             break
-        elif (fgwin_title != "Digital Combat Simulator" and
-              fgwin_title != "DCS.openbeta" and
-              fgwin_title != "DCS") and (window is None):
+        elif gui_is_dcs_foreground() and (window is None):
             window = PyGUI.Window(title, layout, modal=True, finalize=True, disable_close=True)
             window['ux_progress'].update(progress)
 
@@ -211,17 +229,6 @@ def gui_backgrounded_operation(title, bop_fn=None, bop_args=None):
 
     if window is not None:
         window.close()
-
-# use psutil to figure out if DCS is running, potentially notifing user if not.
-#
-def gui_verify_dcs_running(message=None, is_notify=True):
-    try:
-        is_running = "DCS.exe" in (proc.name() for proc in psutil.process_iter())
-    except:
-        is_running = False
-    if not is_running and is_notify:
-        PyGUI.Popup(f"{message}DCS is not currently running.", title="Error")
-    return is_running
 
 # select one option from a list of options with OK/cancel.
 #
