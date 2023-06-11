@@ -2,7 +2,7 @@
 *
 *  prefs.py: DCS Waypoint Editor preferences model/object
 *
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-23 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ class Preferences:
         if os.path.exists(".\\settings.ini"):
             data_path = ".\\"
         elif os.path.exists(f"{Path.home()}\\Documents\\DCSWE\\settings.ini"):
-            data_path = f"{Path.home()}\\Documents\\DCSWE\\"
+            data_path = f"{Path.home()}\\Documents\\DCSWE" + "\\"
         else:
             data_path = None
         return data_path
@@ -261,6 +261,34 @@ class Preferences:
         self._is_f10_elev_clamped = value
 
     @property
+    def is_load_auto_quit(self):
+        return self._is_load_auto_quit
+
+    @property
+    def is_load_auto_quit_bool(self):
+        return True if self._is_load_auto_quit == "true" else False
+
+    @is_load_auto_quit.setter
+    def is_load_auto_quit(self, value):
+        if type(value) == bool or type(value) == int or type(value) == float:
+            value = "true" if value else "false"
+        self._is_load_auto_quit = value
+
+    @property
+    def is_disable_export(self):
+        return self._is_disable_export
+
+    @property
+    def is_disable_export_bool(self):
+        return True if self._is_disable_export == "true" else False
+
+    @is_disable_export.setter
+    def is_disable_export(self, value):
+        if type(value) == bool or type(value) == int or type(value) == float:
+            value = "true" if value else "false"
+        self._is_disable_export = value
+
+    @property
     def last_profile_sel(self):
         return self._last_profile_sel
 
@@ -297,7 +325,7 @@ class Preferences:
     # reset the preferences to their default values, must persist via persist_prefs to save.
     #
     def reset_prefs(self):
-        self.path_dcs = f"{str(Path.home())}\\Saved Games\\DCS.openbeta\\"
+        self.path_dcs = f"{str(Path.home())}\\Saved Games\\DCS.openbeta" + "\\"
         self.path_tesseract = f"{os.environ['PROGRAMW6432']}\\Tesseract-OCR\\tesseract.exe"
         self.path_mission = f"{str(Path.home())}\\Desktop\\cf_mission.xml"
         self.dcs_btn_rel_delay_short = "0.15"
@@ -314,6 +342,8 @@ class Preferences:
         self.is_tesseract_debug = "false"
         self.is_av_setup_for_unk = "true"
         self.is_f10_elev_clamped = "true"
+        self.is_load_auto_quit = "false"
+        self.is_disable_export = "false"
         self.last_profile_sel = ""
 
     # synchronize the preferences the backing store file
@@ -340,6 +370,8 @@ class Preferences:
             self.is_tesseract_debug = self.prefs["PREFERENCES"]["is_tesseract_debug"]
             self.is_av_setup_for_unk = self.prefs["PREFERENCES"]["is_av_setup_for_unk"]
             self.is_f10_elev_clamped = self.prefs["PREFERENCES"]["is_f10_elev_clamped"]
+            self.is_load_auto_quit = self.prefs["PREFERENCES"]["is_load_auto_quit"]
+            self.is_disable_export = self.prefs["PREFERENCES"]["is_disable_export"]
             self.last_profile_sel = self.prefs["PREFERENCES"]["last_profile_sel"]
         except:
             logger.error("Synchronize failed, resetting preferences to defaults")
@@ -365,6 +397,8 @@ class Preferences:
         self.prefs["PREFERENCES"]["is_tesseract_debug"] = self.is_tesseract_debug
         self.prefs["PREFERENCES"]["is_av_setup_for_unk"] = self.is_av_setup_for_unk
         self.prefs["PREFERENCES"]["is_f10_elev_clamped"] = self.is_f10_elev_clamped
+        self.prefs["PREFERENCES"]["is_load_auto_quit"] = self.is_load_auto_quit
+        self.prefs["PREFERENCES"]["is_disable_export"] = self.is_disable_export
         self.prefs["PREFERENCES"]["last_profile_sel"] = self.last_profile_sel
 
         if do_write:

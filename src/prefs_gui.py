@@ -2,7 +2,7 @@
 *
 *  prefs_gui.py: DCS Waypoint Editor preferences GUI
 *
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-23 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -113,6 +113,8 @@ class PreferencesGUI:
         self.prefs.is_tesseract_debug = values.get('ux_is_tesseract_debug')
         self.prefs.is_av_setup_for_unk = values.get('ux_av_setup_unknown')
         self.prefs.is_f10_elev_clamped = values.get('ux_is_f10_elev_clamped')
+        self.prefs.is_load_auto_quit = values.get('ux_is_load_auto_quit')
+        self.prefs.is_disable_export = values.get('ux_is_disable_export')
 
         self.prefs.persist_prefs()
 
@@ -125,6 +127,8 @@ class PreferencesGUI:
         is_tesseract_debug = self.prefs.is_tesseract_debug_bool
         is_av_setup_for_unk = self.prefs.is_av_setup_for_unk_bool
         is_f10_elev_clamped = self.prefs.is_f10_elev_clamped_bool
+        is_load_auto_quit = self.prefs.is_load_auto_quit_bool
+        is_disable_export = self.prefs.is_disable_export_bool
         dcs_bios_ver = dcs_bios_vers_install(self.prefs.path_dcs)
         try:
             as_tmplts = [ "DCS Default" ] + AvionicsSetupModel.list_all_names()
@@ -136,71 +140,81 @@ class PreferencesGUI:
 
 
         layout_paths = [
-            [PyGUI.Text("DCS saved games directory:", (21,1), justification="right"),
+            [PyGUI.Text("DCS saved games directory:", (26,1), justification="right"),
              PyGUI.Input(self.prefs.path_dcs, key='ux_path_dcs', enable_events=True),
              PyGUI.Button("Browse...", button_type=PyGUI.BUTTON_TYPE_BROWSE_FOLDER,
                           target='ux_path_dcs')],
 
-            [PyGUI.Text("Tesseract executable:", (21,1), justification="right"),
+            [PyGUI.Text("Tesseract executable:", (26,1), justification="right"),
              PyGUI.Input(self.prefs.path_tesseract, key='ux_path_tesseract', enable_events=True),
              PyGUI.Button("Browse...", button_type=PyGUI.BUTTON_TYPE_BROWSE_FILE,
                           target='ux_path_tesseract')],
  
-            [PyGUI.Text("Mission file:", (21,1), justification="right"),
+            [PyGUI.Text("Mission file:", (26,1), justification="right"),
              PyGUI.Input(self.prefs.path_mission, key='ux_path_mission', enable_events=True),
              PyGUI.Button("Browse...", button_type=PyGUI.BUTTON_TYPE_BROWSE_FILE,
                           target='ux_path_mission')],
         ]
 
         layout_hotkeys = [
-            [PyGUI.Text("DCS F10 map capture:", (21,1), justification="right"),
+            [PyGUI.Text("DCS F10 map capture:", (26,1), justification="right"),
              PyGUI.Input(self.prefs.hotkey_capture, key='ux_hotkey_capture', enable_events=True,
                          pad=((5,80),0))],
 
-            [PyGUI.Text("Toggle capture mode:", (21,1), justification="right"),
+            [PyGUI.Text("Toggle capture mode:", (26,1), justification="right"),
              PyGUI.Input(self.prefs.hotkey_capture_mode, key='ux_hotkey_capture_mode',
-                         enable_events=True)],
-
-            [PyGUI.Text("Load current profile into jet:", (21,1), justification="right"),
-             PyGUI.Input(self.prefs.hotkey_enter_profile, key='ux_hotkey_enter_profile',
-                         enable_events=True)],
-
-            [PyGUI.Text("Load mission file into jet:", (21,1), justification="right"),
-             PyGUI.Input(self.prefs.hotkey_enter_mission, key='ux_hotkey_enter_mission',
                          enable_events=True)],
 
             [PyGUI.Text("", font="Helvetica 6", pad=(0,0))],
 
-            [PyGUI.Text("F-16 HOTAS DGFT cycle:", (21,1), justification="right"),
+            [PyGUI.Text("Load current profile into jet:", (26,1), justification="right"),
+             PyGUI.Input(self.prefs.hotkey_enter_profile, key='ux_hotkey_enter_profile',
+                         enable_events=True)],
+
+            [PyGUI.Text("Load mission file into jet:", (26,1), justification="right"),
+             PyGUI.Input(self.prefs.hotkey_enter_mission, key='ux_hotkey_enter_mission',
+                         enable_events=True)],
+
+            [PyGUI.Text("Quit after hot key load finishes:", (26,1), justification="right"),
+             PyGUI.Checkbox("", default=is_load_auto_quit, key='ux_is_load_auto_quit'),
+             PyGUI.Text("(applies to cockpit buttons mapped as hot keys)", pad=((0,14),0))],
+
+            [PyGUI.Text("", font="Helvetica 6", pad=(0,0))],
+
+            [PyGUI.Text("F-16 HOTAS DGFT cycle keybind:", (26,1), justification="right"),
              PyGUI.Input(self.prefs.hotkey_dgft_cycle, key='ux_hotkey_dgft_cycle',
                          enable_events=True)],
         ]
 
         layout_dcsbios = [
-            [PyGUI.Text("Button press (short):", (21,1), justification="right"),
+            [PyGUI.Text("Button press (short):", (26,1), justification="right"),
              PyGUI.Input(self.prefs.dcs_btn_rel_delay_short, key='ux_dcs_btn_rel_delay_short',
                          enable_events=True),
              PyGUI.Text("(seconds)", justification="left", pad=((0,14),0))],
 
-            [PyGUI.Text("Button press (medium):", (21,1), justification="right"),
+            [PyGUI.Text("Button press (medium):", (26,1), justification="right"),
              PyGUI.Input(self.prefs.dcs_btn_rel_delay_medium, key='ux_dcs_btn_rel_delay_medium',
                          enable_events=True),
              PyGUI.Text("(seconds)", justification="left", pad=((0,14),0))],
 
-            [PyGUI.Text("DCS-BIOS:", (21,1), justification="right"),
+            [PyGUI.Text("Disable export stream parser:", (26,1), justification="right"),
+             PyGUI.Checkbox("", default=is_disable_export, key='ux_is_disable_export'),
+             PyGUI.Text("(restart DCSWE to apply changes)", pad=((0,14),0))],
+
+            [PyGUI.Text("DCS-BIOS:", (26,1), justification="right"),
              PyGUI.Text("Status", key='ux_dcs_bios_stat', size=(19,1)),
              PyGUI.Button("Install", key='ux_install', size=(18,1),
                           disabled=(dcs_bios_ver is not None))]
         ]
 
         layout_misc = [
-            [PyGUI.Text("Default airframe:", (21,1), justification="right"),
+            [PyGUI.Text("Default airframe:", (26,1), justification="right"),
              PyGUI.Combo(values=airframe_list(),
                          default_value=airframe_type_to_ui_text(self.prefs.airframe_default),
                          key='ux_airframe_default', readonly=True, enable_events=True,
                          size=(27,1), pad=((5,194),0))],
 
-            [PyGUI.Text("Default avionics setup:", (21,1), key='ux_av_setup_txt',
+            [PyGUI.Text("Default avionics setup:", (26,1), key='ux_av_setup_txt',
                         justification="right"),
              PyGUI.Combo(values=as_tmplts, default_value=self.prefs.av_setup_default,
                          key='ux_av_setup_default', readonly=True, enable_events=True,
@@ -208,13 +222,13 @@ class PreferencesGUI:
              PyGUI.Checkbox("Use when setup unknown", default=is_av_setup_for_unk,
                             key='ux_av_setup_unknown', pad=((6,8),6))],
 
-            [PyGUI.Text("DCS F10 clamps elevation:", (21,1), justification="right", pad=(6,(6,0))),
+            [PyGUI.Text("DCS F10 clamps elevation:", (26,1), justification="right", pad=(6,(6,0))),
              PyGUI.Checkbox("", default=is_f10_elev_clamped, key='ux_is_f10_elev_clamped', pad=(0,(6,0)))],
 
-            [PyGUI.Text("DCS F10 logs OCR output:", (21,1), justification="right", pad=(6,(0,6))),
+            [PyGUI.Text("DCS F10 logs OCR output:", (26,1), justification="right", pad=(6,(0,6))),
              PyGUI.Checkbox("", default=is_tesseract_debug, key='ux_is_tesseract_debug', pad=(0,(0,6)))],
 
-            [PyGUI.Text("Check for updates:", (21,1), justification="right", pad=(6,6)),
+            [PyGUI.Text("Check for updates:", (26,1), justification="right", pad=(6,6)),
              PyGUI.Checkbox("", default=is_auto_upd_check, key='ux_is_auto_upd_check', pad=(0,6))]
         ]
 
@@ -223,7 +237,7 @@ class PreferencesGUI:
                              [PyGUI.Frame("DCS/DCSWE Interaction Hot Keys", layout_hotkeys)],
                              [PyGUI.Frame("DCS BIOS Parameters", layout_dcsbios)],
                              [PyGUI.Frame("Miscellaneous", layout_misc)],
-                             [PyGUI.Button("OK", key='ux_ok', size=(8,1), pad=((264,0),16))]],
+                             [PyGUI.Button("OK", key='ux_ok', size=(8,1), pad=((288,0),16))]],
                             modal=True, finalize=True)
 
     # update gui for changes to the dcs path
