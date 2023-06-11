@@ -6,7 +6,7 @@
 *  Editor places on CombatFlite missions that it can import.
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-23 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ import webbrowser
 from src.logger import get_logger
 
 
-DCS_WE_VERSION = "v1.7.1-51stVFW"
+DCS_WE_VERSION = "v1.8.0-51stVFW"
 
 logger = get_logger(__name__)
 
