@@ -47,14 +47,16 @@ logger = get_logger(__name__)
 
 def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
 
+    logger.info("DCS-BIOS export stream parser thread starting")
+
     # create a udp socket for the export stream. default is localhost:7777.
     #
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-    sock.settimeout(5)
+    sock.settimeout(2)
     sock.bind((host, port))
 
     # TODO: do we want to throttle this a bit?
-    while True:
+    while not wpe_gui.is_dcswe_exiting:
 
         # if dcs is not in the foreground, we will track the current airframe to update the
         # export details we are going to track. we'll skip checking the export stream at this
@@ -122,3 +124,4 @@ def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
             else:
                 break
 
+    logger.info("DCS-BIOS export stream parser thread exiting")

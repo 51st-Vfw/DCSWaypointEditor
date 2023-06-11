@@ -82,6 +82,7 @@ class WaypointEditorGUI:
         self.menu_pend_q = queue.Queue()
         self.profile = None
         self.scaled_dcs_gui = False
+        self.is_dcswe_exiting = False
         self.is_dcs_f10_enabled = False
         self.is_dcs_f10_tgt_add = False
         self.is_profile_dirty = False
@@ -115,7 +116,7 @@ class WaypointEditorGUI:
         self.window = self.create_gui()
 
         if not self.editor.prefs.is_disable_export_bool:
-            self.logger.info("Launching DCS-BIOS export stream parser thread")
+            self.logger.info("DCS-BIOS export stream parser thread launching")
             self.dexp_thread = threading.Thread(target=dcs_exp_parse_thread, kwargs={"wpe_gui" : self})
             self.dexp_thread.start()
 
@@ -1511,6 +1512,8 @@ class WaypointEditorGUI:
         self.close()
 
     def close(self):
+        self.is_dcswe_exiting = True
+
         self.validate_text_callsign('ux_callsign')
 
         self.rebind_hotkey(self.editor.prefs.hotkey_capture)
@@ -1521,3 +1524,5 @@ class WaypointEditorGUI:
         self.window.close()
 
         self.editor.stop()
+
+        self.dexp_thread.join()
