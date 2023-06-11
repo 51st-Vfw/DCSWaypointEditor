@@ -3,7 +3,7 @@
 *  wp_editor_gui.py: DCS Waypoint Editor main GUI
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021-22 twillis/ilominar
+*  Copyright (C) 2021-23 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@ import PySimpleGUI as PyGUI
 import queue
 import src.pymgrs as mgrs
 import tkinter as tk
+import threading
 import winsound
 import zlib
 
@@ -43,10 +44,11 @@ from src.cf_xml import CombatFliteXML
 from src.comp_dcs_bios import dcs_bios_is_current, dcs_bios_vers_install, dcs_bios_vers_latest, dcs_bios_install
 from src.comp_dcs_we import dcs_we_is_current, dcs_we_vers_install, dcs_we_vers_latest, dcs_we_install
 from src.db_models import ProfileModel, AvionicsSetupModel
+from src.dcs_button_hook import dcs_exp_parse_thread
 from src.dcs_f10_capture import dcs_f10_capture_map_coords, dcs_f10_parse_map_coords_string
 from src.gui_util import gui_update_request, gui_backgrounded_operation, gui_verify_dcs_running
 from src.gui_util import gui_select_from_list, gui_text_strike, gui_text_unstrike
-from src.gui_util import airframe_list, airframe_type_to_ui_text, airframe_ui_text_to_type
+from src.gui_util import gui_is_dcs_foreground, airframe_list, airframe_type_to_ui_text, airframe_ui_text_to_type
 from src.logger import get_logger
 from src.mission_package import dcswe_install_mpack
 from src.db_objects import Profile, Waypoint, MSN
@@ -112,6 +114,11 @@ class WaypointEditorGUI:
 
         self.window = self.create_gui()
 
+        if not self.editor.prefs.is_disable_export_bool:
+            self.logger.info("Launching DCS-BIOS export stream parser thread")
+            self.dexp_thread = threading.Thread(target=dcs_exp_parse_thread, kwargs={"wpe_gui" : self})
+            self.dexp_thread.start()
+
 
     # ================ profile support
 
@@ -137,6 +144,9 @@ class WaypointEditorGUI:
             return "Untitled"
         else:
             return self.profile.profilename
+
+    def profile_airframe(self):
+        return self.profile.aircraft
 
     def import_profile(self, path, csign="", name="", aircraft="viper", warn=False):
         with open(path, "rb") as f:
@@ -1325,6 +1335,10 @@ class WaypointEditorGUI:
             # ditch hotkeys that came in while we were away.
             #
             self.hkey_clear_pendings()
+
+            if self.editor.prefs.is_load_auto_quit_bool:
+                self.logger.info("Auto quit triggered following successful load hot key")
+                self.menu_quit()
         else:
             winsound.PlaySound(UX_SND_ERROR, flags=winsound.SND_FILENAME)
 
@@ -1348,11 +1362,16 @@ class WaypointEditorGUI:
                     gui_backgrounded_operation(f"Entering Mission '{mission_name}' into {airframe}...",
                                                bop_fn=self.editor.enter_all, bop_args=(tmp_profile,))
                     self.editor.set_driver(self.profile.aircraft)
+                    winsound.PlaySound(UX_SND_INJECT_TO_JET, flags=winsound.SND_FILENAME)
                     #
                     # ditch hotkeys that came in while we were away.
                     #
                     self.hkey_clear_pendings()
-                    winsound.PlaySound(UX_SND_INJECT_TO_JET, flags=winsound.SND_FILENAME)
+
+                    if self.editor.prefs.is_load_auto_quit_bool:
+                        self.logger.info("Auto quit triggered following successful load hot key")
+                        self.menu_quit()
+
                 else:
                     winsound.PlaySound(UX_SND_ERROR, flags=winsound.SND_FILENAME)
             except:
@@ -1434,7 +1453,7 @@ class WaypointEditorGUI:
         validate_map = { 'ux_callsign:focus_out' : self.validate_text_callsign }
 
         while True:
-            event, self.values = self.window.Read(timeout=100, timeout_key='ux_timeout')
+            event, self.values = self.window.Read(timeout=15, timeout_key='ux_timeout')
             if event != 'ux_timeout':
                 self.logger.debug(f"DCSWE Event: {event}")
                 self.logger.debug(f"DCSWE Values: {self.values}")
@@ -1452,6 +1471,10 @@ class WaypointEditorGUI:
             # ======== hotkeys, menus (enqueued from handler outside PySimpleGUI)
 
             elif event == 'ux_timeout':
+
+                # walk the pending hotkeys and invoke the appropriate callback until the pending hot key
+                # queue is empty.
+                #
                 while True:
                     try:
                         hkey_callback = self.hkey_pend_q.get(False)
