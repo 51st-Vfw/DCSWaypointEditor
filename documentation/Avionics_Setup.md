@@ -1,29 +1,32 @@
 # Avionics Setup
 
 DCC Waypoint Editor (DCSWE) currently supports avionics setup for the F-16C Viper. The
-following state, in addition to waypoints, from the Viper's avionics can be set up:
+following state in addition to
+[steerpoints](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/Waypoint_Setup.md)
+from the Viper's avionics can be set up:
 
-- TACAN, in yardstick mode
+- TACAN yardstick
 - MFD formats for use on the left and right MFDs in NAV, AA, AG, and DGFT master modes
 - CMDS programs for chaff and flares
+- Bullseye display on FCR and HSD MFD formats
+- JHMCS setup
 
 At present, this support is specific to the Viper. As other airframes can have some
 analogous state, we may extend the support in the future.
 
-> **NOTE:** This functionality eventually may be replaced by DCS DTC support if and
-> when ED makes that happen.
+> **NOTE:** This functionality eventually will be replaced by DCS DTC support.
 
-Because DCSWE cannot always determine avionics state (e.g., it is difficult for DCSWE
-to determine which MFD format is currently selected from information it has readily
-available), DCSWE makes several assumptions, detailed below, around the initial
-configuration of the avionics.
+Because DCSWE cannot always determine avionics state (e.g., DCSWE is unable to determine
+which MFD format is currently selected), DCSWE makes several assumptions, detailed below,
+around the initial configuration of the avionics. These assumptions match the state of
+the avionics following a cold start before any modifications are made to avionics state.
 
 > **NOTE:** If the state does not match the expected initial configuration, the updates
 > that DCSWE performs may not yield the desired results.
 
 Avionics setup can be done as part of loading a profile or a mission (in DCSWE JSON
 format) into the jet. For non-native mission setups (e.g., from a CombatFlite export),
-you can either import into a native DCSWE profile and set the avionics setup through
+you can either import into a native DCSWE profile and specify the avionics setup through
 that DCSWE profile, or tell DCSWE (through preferences) to use a default avionics setup
 when configuring the jet using non-native sources.
 
@@ -32,24 +35,29 @@ DCSWE is driving the cockpit switches.
 
 ## Preferences
 
-There are three preferences that control the behavior of the avionics setup functionality.
+There are three
+[preferences](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/Preferences.md)
+that control the behavior of the avionics setup functionality.
 
 - *Default Avionics Setup:* Specifies the default avionics setup to use when creating new
   profiles, the setup "DCS Default" corresponds to the default setup of the jet in DCS.
-  For airframes other than the Viper, this setting is effectively always "DCS Default".
+  For airframes that do not support avionics setup, this setting is effectively always
+  "DCS Default".
 - *Use When Setup Unknown:* When set, this preference causes DCSWE to use the default
   avionics setup in situations where it does not have information on the avionics setup.
   For example, if this is set, when loading a mission from a CombatFlite export file
   will use the specified default avionics setup. When not set, DCSWE will not change
   avionics setup if it does not have information on the desired setup (i.e., it behaves
   as if the default were "DCS Default")
-- *F-16 HOTAS DOGFIGHT Cycle:* Specifies the keybind for the `Cycle` command on the
-  HOTAS DGFT switch, the keybind should use at least one of `shift`, `alt`, or `ctrl`.
-  The keybind should be specified keeping in mind that DCS uses specific modifiers
-  (left or right `shift`, for example).
+- *F-16 HOTAS DGFT Cycle:* Specifies the keybind for the `Cycle` command on the
+  HOTAS DGFT switch in the Viper, the keybind should use at least one of `shift`, `alt`,
+  or `ctrl`. The keybind should be specified keeping in mind that DCS uses specific
+  modifiers (left or right `shift`, for example).
 
-These can be set throught the DCSWE preferences, strangely enough. Note that the
-`Cycle` hotkey will need to also be set up through the control options in DCS
+These can be set throught the
+[DCSWE preferences](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/Preferences.md),
+strangely enough. Note that the
+`DGFT Cycle` hotkey will need to also be set up through the control options in DCS
 (specifically, see the HOTAS section in the "F-16C Sim" controls).
 
 ## TACAN Yardstick
@@ -110,6 +118,11 @@ in the Viper:
 The initial state of the Viper in DCS when the jet is either powered up from a cold
 start or running following a hot start should match these requirements.
 
+When specifying the MFD setups, DCSWE provides an option to "only set MFD formats when
+they differ from the default format assignments". This reduces the setup time by
+reducing button presses; however, in this mode DCSWE is less able to handle deviations
+from the default setups.
+
 ## CMDS Programs
 
 There are five CMDS programs accessible through the UFC in the Viper: MAN 1 through 4
@@ -128,3 +141,18 @@ conditions in the Viper:
 
 The initial state of the Viper in DCS when the jet is either powered up from a cold
 start or running following a hot start should match these requirements.
+
+When specifying the CMDS programs, DCSWE provides an option to "only set CMDS program
+parameters when they differ from the default parameters". This reduces the setup time by
+reducing button presses; however, in this mode DCSWE is less able to handle deviations
+from the default setups.
+
+## Bullseye Setup
+
+The avionics setup can specify either "ownship bullseye" or "steering cue" modes for the
+FCR and HSD MFD formats.
+
+## JHMCS Setup
+
+The avionics setup can specify JHMCS setup parameters including blanking, RWR display,
+and declutter level.

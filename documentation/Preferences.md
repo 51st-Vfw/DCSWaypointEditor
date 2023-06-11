@@ -4,11 +4,12 @@ DCC Waypoint Editor (DCSWE) tracks a number of preferences that control how it o
 Preferences are stored in the DCSWE application data area in the file,
 
 ```
-{HOME}/Documents/DCSWE/settings.ini
+{HOME}\Documents\DCSWE\settings.ini
 ```
 
-Here, `{HOME}` is your home directory (e.g., `C:/Users/twillis`). In some situations,
-application data may be saved in the application directory itself.
+Here, `{HOME}` is your home directory (e.g., `C:\Users\raven`). If you did not allow
+DCSWE to use your `Documents` directory, application data may be saved in the main
+DCSWE directory that includes the executable.
 
 The first time you run DCSWE, it will display the preferences UI that allow you to
 setup the preferences. You can access the preferences UI at any time by selecting
@@ -45,18 +46,23 @@ There are five preferences in this category,
   See **TODO** for more information.
 - *Load Mission File into Jet:* Loads the mission file (specified through the *Mission
   File* preference described above) into the jet. See **TODO** for more information.
-- *F-16 HOTAS DOGFIGHT Cycle:* Specifies the keybind for the `Cycle` command on the
+- *Quit after hot key load finishes:* Causes DCSWE to automatically quit after successfully
+  loading a profile or mission file into the jet triggered by a hot key.
+- *F-16 HOTAS DOGFIGHT Cycle Keybind:* Specifies the keybind for the `Cycle` command on the
   HOTAS DGFT switch. This is used by the avionics setup functionality. See **TODO**
   for more information.
 
 ## DCS BIOS Parameters Section
 
-There are two preferences in this category,
+There are three preferences in this category,
 
 - *Button Press (Short):* Sets the duration (in seconds) of short button presses via
   DCS-BIOS.
 - *Button Press (Medium):* Sets the duration (in seconds) of medium button presses via
   DCS-BIOS.
+- *Disable Export Stream Parser:* Disables the parsing of the DCS-BIOS stream that
+  encodes cockpit state. This disables the use of cockpit buttons as hotkeys in
+  airframes that support this.
 
 You can control the rate of data entry into the jet by increasing or decreasing the
 button press durations.
