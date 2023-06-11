@@ -3,7 +3,7 @@
 *  dcs_wp_editor.py: DCS waypoint editor
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-23 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -27,9 +27,11 @@ import traceback
 from pathlib import Path
 
 from src.comp_dcs_bios import dcs_bios_vers_install, dcs_bios_vers_latest, dcs_bios_install
+from src.comp_dcs_bios import dcs_bios_is_dcswe_config_installed, dcs_bios_update_config
 from src.comp_dcs_we import dcs_we_vers_install, dcs_we_vers_latest, dcs_we_install
 from src.db_objects import generate_default_bases
 from src.gui_util import gui_update_request, gui_new_install_request, gui_exception
+from src.gui_util import gui_update_dcsbios_cfg_request
 from src.logger import get_logger, log_preferences
 from src.prefs import Preferences
 from src.prefs_gui import PreferencesGUI
@@ -46,7 +48,7 @@ from src.wp_editor_gui import WaypointEditorGUI
 def setup_app_data_environment():
     data_path = Preferences.locate_dcswe_prefs()
     if data_path is None:
-        data_path = f"{Path.home()}\\Documents\\DCSWE\\"
+        data_path = f"{Path.home()}\\Documents\\DCSWE" + '\\'
         if not os.path.exists(data_path):
             try:
                 if not gui_new_install_request(data_path):
@@ -93,6 +95,10 @@ def main(logger, data_path):
         if (prefs.is_auto_upd_check_bool and
             gui_update_request("DCS-BIOS", vers_dbios_cur, vers_dbios_latest, db_install_fn)):
             vers_dbios_cur = dcs_bios_vers_install(prefs.path_dcs)
+
+        cfg_install_fn = lambda: dcs_bios_update_config(prefs.path_dcs)
+        if not dcs_bios_is_dcswe_config_installed(prefs.path_dcs):
+            gui_update_dcsbios_cfg_request(cfg_install_fn)
 
         editor = WaypointEditor(prefs)
 
