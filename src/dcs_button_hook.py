@@ -26,21 +26,24 @@ from src.logger import get_logger
 
 from time import sleep
 
-# maps internal airframe name onto an { <address>, <mask>, <shift> } tuple that defines the export
-# state values to look for. the tuple is a map with keys "a", "m", and "s" for <address>, <mask>,
-# and <shift> respectively.
+# maps internal airframe name onto map defining a set of cockpit buttons to use for loading
+# a profile ("load"), toggling the item select type ("type"), and selecting the next item
+# ("isel"). each value is a  { <address>, <mask>, <shift>, <value> } tuple that defines the
+# export state values to look for. the tuple is a map with keys "a", "m", "s", and "v" for
+# <address>, <mask>, <shift>, and <value> respectively.
 #
 # see the .json airframe files in Scripts/DCS-BIOS/doc/json from the DCS-BIOS repository for
 # details on the appropriate <address>, <mask>, and <shift> values for a particular button.
 #
-exp_button_map = { "viper" : { "a" : 17450, "m" : 64, "s" : 6 },            # ICP/FLIR Wx
-                   "warthog" :  { },                                        # unsupported
-                   "harrier" :  { },                                        # unsupported
-                   "tomcat" :  { },                                         # unsupported
-                   "hornet" :  { },                                         # unsupported
-                   "mirage" :  { }                                          # unsupported
+exp_button_map = {
+    "viper" : { "load" : { "a" : 17450, "m" :   64, "s" :  6, "v" : 1 },    # ICP/FLIR Wx
+                "type" : { "a" : 17450, "m" : 6144, "s" : 11, "v" : 0 },    # ICP/FLIR INCR dn
+                "isel" : { "a" : 17450, "m" : 6144, "s" : 11, "v" : 2 },    # ICP/FLIR INCR up
+    }
 }
 
+17450, 65, 6, 1
+17450, 6144, 11, 0/2
 
 logger = get_logger(__name__)
 
@@ -55,6 +58,8 @@ def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
     sock.settimeout(2)
     sock.bind((host, port))
 
+    af_btn_map = None
+
     # TODO: do we want to throttle this a bit?
     while not wpe_gui.is_dcswe_exiting:
 
@@ -65,11 +70,18 @@ def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
         if not gui_is_dcs_foreground():
             exp_params = exp_button_map[wpe_gui.profile_airframe()]
             if exp_params is not None:
-                af_btn_addr = exp_params["a"]
-                af_btn_mask = exp_params["m"]
-                af_btn_shft = exp_params["s"]
-                sleep(5)
-                continue
+                af_btn_map = {
+                    wpe_gui.hkey_profile_enter_in_jet : exp_params["load"],
+                    wpe_gui.hkey_item_sel_type_toggle : exp_params["type"],
+                    wpe_gui.hkey_item_sel_advance             : exp_params["isel"],
+                }
+            else:
+                af_btn_map = None
+            sleep(4)
+            continue
+        elif af_btn_map == None:
+            sleep(4)
+            continue
 
         # try to pull data from the export stream. if the receive fails, we will loop back
         # around and try again. note that the stream will not come up until player is in
@@ -113,11 +125,12 @@ def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
                         btn_data = (data[i+7] << 24) + (data[i+6] << 16) + (data[i+5] << 8) + data[i+4]
                     i += 4 + btn_len
 
-                    if btn_addr == af_btn_addr:
-                        btn_val = (btn_data & af_btn_mask) >> af_btn_shft
-                        if btn_val != 0:
-                            logger.debug(f"Export press: 0x{af_btn_addr:x} & 0x{af_btn_mask:x} >> {af_btn_shft}")
-                            wpe_gui.hkey_profile_enter_in_jet()
+                    for hkey_fn, btn_info in af_btn_map.items():
+                        if btn_addr == btn_info["a"]:
+                            btn_val = (btn_data & btn_info["m"]) >> btn_info["s"]
+                            if btn_val == btn_info["v"]:
+                                logger.debug(f"Export press: 0x{btn_info['a']:x} & 0x{btn_info['m']:x} >> {btn_info['s']} = {btn_info['v']}")
+                                hkey_fn()
 
                 else:
                     break

@@ -31,6 +31,7 @@ import queue
 import src.pymgrs as mgrs
 import tkinter as tk
 import threading
+import win32com.client as wincom
 import winsound
 import zlib
 
@@ -87,12 +88,15 @@ class WaypointEditorGUI:
         self.is_dcs_f10_tgt_add = False
         self.is_profile_dirty = False
         self.is_waypoint_dirty = False
+        self.is_pa_tgt_avionics = True
         self.tk_menu_dcswe = None
         self.tk_menu_profile = None
         self.tk_menu_mission = None
         self.values = None
         self.selected_wp_type = "WP"
         self.selected_profile = None
+
+        self.tts_voice = wincom.Dispatch("SAPI.SpVoice")
 
         self.load_profile()
 
@@ -816,6 +820,8 @@ class WaypointEditorGUI:
         hk_capture_mode = prefs.hotkey_capture_mode
         hk_enter_profile = prefs.hotkey_enter_profile
         hk_enter_mission = prefs.hotkey_enter_mission
+        hk_prof_adv_tgt = prefs.hotkey_item_sel_type_toggle
+        hk_prof_adv = prefs.hotkey_item_sel_advance
 
         prefs_gui = PreferencesGUI(prefs)
         prefs_gui.run()
@@ -836,6 +842,8 @@ class WaypointEditorGUI:
             self.rebind_hotkey(hk_capture_mode)
         self.rebind_hotkey(hk_enter_profile, prefs.hotkey_enter_profile, self.hkey_profile_enter_in_jet)
         self.rebind_hotkey(hk_enter_mission, prefs.hotkey_enter_mission, self.hkey_mission_enter_in_jet)
+        self.rebind_hotkey(hk_prof_adv_tgt, prefs.hotkey_item_sel_type_toggle, self.hkey_item_sel_type_toggle)
+        self.rebind_hotkey(hk_prof_adv, prefs.hotkey_item_sel_advance, self.hkey_item_sel_advance)
 
         self.update_gui_enable_state()
     
@@ -1030,8 +1038,8 @@ class WaypointEditorGUI:
     # ================ ui profile panel handlers
 
 
-    def do_profile_select(self):
-        if self.approve_profile_change(action="Changing the"):
+    def do_profile_select(self, force_approve=False):
+        if force_approve or self.approve_profile_change(action="Changing the"):
             try:
                 profile_name = self.values['ux_prof_select']
                 self.load_profile(profile_name)
@@ -1268,25 +1276,39 @@ class WaypointEditorGUI:
     # ================ keyboard hotkey handlers
 
 
-    # as these are not typically called form the run loop (as they represent hotkeys and so on that
-    # might not have widgets), we pend hotkeys onto hkey_pend_q via hkey_<foo> and do the work on
-    # the main thread via do_hk_<foo>.
+    # as hot key presses may not be noted on the run loop, we will pend hot key presses on the
+    # hkey_pend_q queue so they can be handled on the run loop during idle times. to process
+    # a hot key, any thread may use hkey_<foo> functions to pend the key press. later, the run
+    # loop will call the appropriate do_hk_<foo> function to handle the key.
+    #
+    # NOTE: do_hk_<foo> functions may only be called from the run loop on the main thread.
+    # NOTE: hkey_<foo> functions may be called from any thread.
+
+    def heky_post_if_dcs_fgnd(self, handler_fn):
+        if gui_is_dcs_foreground():
+            self.hkey_pend_q.put(handler_fn)
 
     def hkey_clear_pendings(self):
         with self.hkey_pend_q.mutex:
             self.hkey_pend_q.queue.clear()
 
     def hkey_dcs_f10_capture(self):
-        self.hkey_pend_q.put(self.do_hk_dcs_f10_capture)
+        self.heky_post_if_dcs_fgnd(self.do_hk_dcs_f10_capture)
     
     def hkey_dcs_f10_capture_tgt_toggle(self):
-        self.hkey_pend_q.put(self.do_hk_dcs_f10_capture_tgt_toggle)
+        self.heky_post_if_dcs_fgnd(self.do_hk_dcs_f10_capture_tgt_toggle)
  
     def hkey_profile_enter_in_jet(self):
-        self.hkey_pend_q.put(self.do_hk_profile_enter_in_jet)
+        self.heky_post_if_dcs_fgnd(self.do_hk_profile_enter_in_jet)
 
     def hkey_mission_enter_in_jet(self):
-        self.hkey_pend_q.put(self.do_hk_mission_enter_in_jet)
+        self.heky_post_if_dcs_fgnd(self.do_hk_mission_enter_in_jet)
+
+    def hkey_item_sel_type_toggle(self):
+        self.heky_post_if_dcs_fgnd(self.do_hk_item_sel_type_toggle)
+
+    def hkey_item_sel_advance(self):
+        self.heky_post_if_dcs_fgnd(self.do_hk_item_sel_advance)
 
 
     def do_hk_dcs_f10_capture(self):
@@ -1381,6 +1403,45 @@ class WaypointEditorGUI:
         else:
             winsound.PlaySound(UX_SND_ERROR, flags=winsound.SND_FILENAME)
 
+    def do_hk_item_sel_type_toggle(self):
+        self.is_pa_tgt_avionics = not self.is_pa_tgt_avionics
+        if gui_is_dcs_foreground():
+            if self.is_pa_tgt_avionics:
+                self.logger.info("Setting profile advance target to avionics")
+                self.tts_voice.Speak("Avionics")
+            else:
+                self.logger.info("Setting profile advance target to profile")
+                self.tts_voice.Speak("Profile")
+            #
+            # ditch hotkeys that came in while tts is speaking.
+            #
+            # self.hkey_clear_pendings()
+
+    def do_hk_item_sel_advance(self):
+        if self.is_pa_tgt_avionics:
+            av_tmplts = [ "DCS Default" ] + AvionicsSetupModel.list_all_names()
+            new_index = av_tmplts.index(self.profile.av_setup_name) + 1
+            if new_index >= len(av_tmplts):
+                new_index = 0
+            new_name = av_tmplts[new_index]
+            self.values['ux_prof_av_setup_combo'] = new_name
+            self.do_profile_av_setup_select()
+
+        else:
+            profiles = [ "" ] + ProfileModel.list_all_names()
+            new_index = profiles.index(self.profile.profilename) + 1
+            if new_index >= len(profiles):
+                new_index = 0
+                new_name = "Empty Profile"
+            else:
+                new_name = profiles[new_index]
+            self.values['ux_prof_select'] = profiles[new_index]
+            self.do_profile_select(True)
+
+        if gui_is_dcs_foreground():
+            self.tts_voice.Speak(new_name)
+        self.logger.info(f"Setting profile/avionics tp {new_name}")
+
 
     # ================ text field validation
 
@@ -1407,6 +1468,8 @@ class WaypointEditorGUI:
             self.rebind_hotkey(None, self.editor.prefs.hotkey_capture_mode, self.hkey_dcs_f10_capture_tgt_toggle)
         self.rebind_hotkey(None, self.editor.prefs.hotkey_enter_profile, self.hkey_profile_enter_in_jet)
         self.rebind_hotkey(None, self.editor.prefs.hotkey_enter_mission, self.hkey_mission_enter_in_jet)
+        self.rebind_hotkey(None, self.editor.prefs.hotkey_item_sel_type_toggle, self.hkey_item_sel_type_toggle)
+        self.rebind_hotkey(None, self.editor.prefs.hotkey_item_sel_advance, self.hkey_item_sel_advance)
 
         if self.editor.prefs.last_profile_sel != "":
             try:
@@ -1520,6 +1583,8 @@ class WaypointEditorGUI:
         self.rebind_hotkey(self.editor.prefs.hotkey_capture_mode)
         self.rebind_hotkey(self.editor.prefs.hotkey_enter_profile)
         self.rebind_hotkey(self.editor.prefs.hotkey_enter_mission)
+        self.rebind_hotkey(self.editor.prefs.hotkey_item_sel_type_toggle)
+        self.rebind_hotkey(self.editor.prefs.hotkey_item_sel_advance)
 
         self.window.close()
 
