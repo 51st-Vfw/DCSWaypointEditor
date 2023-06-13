@@ -19,7 +19,7 @@ Currently DCSWE supports the following airframes,
 
 > **NOTE**: Not all features are supported on all airframes.
 
-The documentation is broken up into several chapters.
+The documentation is broken up into several core chapters.
 
 * [Installation & Setup](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/Installation.md):
   How to install and setup of DCSWE.
@@ -28,7 +28,13 @@ The documentation is broken up into several chapters.
 * [Waypoint Setup](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/Waypoint_Setup.md):
   Outlines the use of the waypoint setup functionality.
 * [Avionics Setup](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/Avionics_Setup.md):
-  Outlines the use of the avionics setup functionality on supported airframes.
+  Outlines the use of the avionics setup functionality.
+* [DCSWE & DCS](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/DCSWE_DCS.md):
+  Discusses how DCSWE and DCS interact to set up a jet or retrieve F10 map
+  coordinates for a waypoint.
+
+In addition, the following chapters cover less used functionality in the program,
+
 * [CombatFlite Integration](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/CF_Integration.md):
   Describes how to integrate DCSWE with CombatFlite.
 * [Mission Packages](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/Mission_Packs.md):

@@ -13,7 +13,7 @@ and
 to support its operation. DCSWE uses DCS-BIOS to interact with controls in a DCS
 clickable cockpit in order to set up the jet according to user specifications.
 DCSWE uses Google Tesseract to help capture coordinates from the DCS F10 map (see
-**TODO**).
+[DCSWE & DCS](https://github.com/51st-Vfw/DCSWaypointEditor/blob/master/documentation/DCSWE_DCS.md)).
 
 > **NOTE:** There are multiple versions of DCS-BIOS available on the Internet. DCSWE
 > requires the DCSFlightpanels version linked above; it is not compatible with the
