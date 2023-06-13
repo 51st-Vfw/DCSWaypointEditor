@@ -167,6 +167,26 @@ class Preferences:
         self._hotkey_enter_mission = value
 
     @property
+    def hotkey_item_sel_type_toggle(self):
+        return self._hotkey_item_sel_type_toggle
+    
+    @hotkey_item_sel_type_toggle.setter
+    def hotkey_item_sel_type_toggle(self, value):
+        if not self.is_hotkey_valid(value):
+            raise ValueError("Invalid hotkey")
+        self._hotkey_item_sel_type_toggle = value
+
+    @property
+    def hotkey_item_sel_advance(self):
+        return self._hotkey_item_sel_advance
+    
+    @hotkey_item_sel_advance.setter
+    def hotkey_item_sel_advance(self, value):
+        if not self.is_hotkey_valid(value):
+            raise ValueError("Invalid hotkey")
+        self._hotkey_item_sel_advance = value
+
+    @property
     def hotkey_dgft_cycle(self):
         return self._hotkey_dgft_cycle
     
@@ -334,6 +354,8 @@ class Preferences:
         self.hotkey_capture_mode = "ctrl+shift+t"
         self.hotkey_enter_profile = "ctrl+alt+t"
         self.hotkey_enter_mission = "ctrl+alt+shift+t"
+        self.hotkey_item_sel_type_toggle = "ctrl+alt+a"
+        self.hotkey_item_sel_advance = "ctrl+alt+z"
         self.hotkey_dgft_cycle = "left ctrl+3"
         self.airframe_default = "viper"
         self.av_setup_default = "DCS Default"
@@ -362,6 +384,8 @@ class Preferences:
             self.hotkey_capture_mode = self.prefs["PREFERENCES"]["hotkey_capture_mode"]
             self.hotkey_enter_profile = self.prefs["PREFERENCES"]["hotkey_enter_profile"]
             self.hotkey_enter_mission = self.prefs["PREFERENCES"]["hotkey_enter_mission"]
+            self.hotkey_item_sel_type_toggle = self.prefs["PREFERENCES"]["hotkey_item_sel_type_toggle"]
+            self.hotkey_item_sel_advance = self.prefs["PREFERENCES"]["hotkey_item_sel_advance"]
             self.hotkey_dgft_cycle = self.prefs["PREFERENCES"]["hotkey_dgft_cycle"]
             self.airframe_default = self.prefs["PREFERENCES"]["airframe_default"]
             self.av_setup_default = self.prefs["PREFERENCES"]["av_setup_default"]
@@ -389,6 +413,8 @@ class Preferences:
         self.prefs["PREFERENCES"]["hotkey_capture_mode"] = self.hotkey_capture_mode
         self.prefs["PREFERENCES"]["hotkey_enter_profile"] = self.hotkey_enter_profile
         self.prefs["PREFERENCES"]["hotkey_enter_mission"] = self.hotkey_enter_mission
+        self.prefs["PREFERENCES"]["hotkey_item_sel_type_toggle"] = self.hotkey_item_sel_type_toggle
+        self.prefs["PREFERENCES"]["hotkey_item_sel_advance"] = self.hotkey_item_sel_advance
         self.prefs["PREFERENCES"]["hotkey_dgft_cycle"] = self.hotkey_dgft_cycle
         self.prefs["PREFERENCES"]["airframe_default"] = self.airframe_default
         self.prefs["PREFERENCES"]["av_setup_default"] = self.av_setup_default
