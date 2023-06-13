@@ -1438,9 +1438,10 @@ class WaypointEditorGUI:
             self.values['ux_prof_select'] = profiles[new_index]
             self.do_profile_select(True)
 
+        self.logger.info(f"Setting profile/avionics to {new_name}")
         if gui_is_dcs_foreground():
+            new_name = new_name.replace("_", " ")
             self.tts_voice.Speak(new_name)
-        self.logger.info(f"Setting profile/avionics tp {new_name}")
 
 
     # ================ text field validation
