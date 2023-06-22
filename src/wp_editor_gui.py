@@ -1415,7 +1415,7 @@ class WaypointEditorGUI:
             #
             # ditch hotkeys that came in while tts is speaking.
             #
-            # self.hkey_clear_pendings()
+            self.hkey_clear_pendings()
 
     def do_hk_item_sel_advance(self):
         if self.is_pa_tgt_avionics:
@@ -1442,6 +1442,10 @@ class WaypointEditorGUI:
         if gui_is_dcs_foreground():
             new_name = new_name.replace("_", " ")
             self.tts_voice.Speak(new_name)
+            #
+            # ditch hotkeys that came in while tts is speaking.
+            #
+            self.hkey_clear_pendings()
 
 
     # ================ text field validation
