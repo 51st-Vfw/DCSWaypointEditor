@@ -42,8 +42,6 @@ exp_button_map = {
     }
 }
 
-17450, 65, 6, 1
-17450, 6144, 11, 0/2
 
 logger = get_logger(__name__)
 
@@ -73,14 +71,18 @@ def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
                 af_btn_map = {
                     wpe_gui.hkey_profile_enter_in_jet : exp_params["load"],
                     wpe_gui.hkey_item_sel_type_toggle : exp_params["type"],
-                    wpe_gui.hkey_item_sel_advance             : exp_params["isel"],
+                    wpe_gui.hkey_item_sel_advance     : exp_params["isel"],
                 }
+                af_mem_map = { }
+                for key, val in exp_params.items():
+                    if not val["a"] in af_mem_map:
+                        af_mem_map[val["a"]] = 0
             else:
                 af_btn_map = None
-            sleep(4)
+            sleep(2)
             continue
         elif af_btn_map == None:
-            sleep(4)
+            sleep(2)
             continue
 
         # try to pull data from the export stream. if the receive fails, we will loop back
@@ -88,8 +90,9 @@ def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
         # pit and exports have started.
         #
         try:
-            data, addr = sock.recvfrom(4096)
+            data, addr = sock.recvfrom(1024)
         except socket.error as e:
+            # logger.debug(f"DCS-BIOS export stream parser thread socket error: {e}")
             continue
 
         # search from the start of the received bytes for a frame delimiter: { 0x55 0x55 0x55 0x55 }
@@ -115,21 +118,27 @@ def dcs_exp_parse_thread(wpe_gui, host = "127.0.0.1", port = 7777):
         while i < len(data):
             if ((data[i] == 0x55) and (data[i+1] == 0x55) and (data[i+2] == 0x55) and (data[i+3] == 0x55)):
                 i += 4
-            elif len(data) > (i + 3):
+            elif len(data) >= (i + 4):
                 btn_addr = (data[i+1] << 8) + data[i]
                 btn_len  = (data[i+3] << 8) + data[i+2]
-                if len(data) > (i + 3 + btn_len):
-                    if btn_len == 2:
-                        btn_data = (data[i+5] << 8) + data[i+4]
-                    elif btn_len == 4:
-                        btn_data = (data[i+7] << 24) + (data[i+6] << 16) + (data[i+5] << 8) + data[i+4]
-                    i += 4 + btn_len
+                i += 4
+                if len(data) >= (i + btn_len):
+                    af_mem_map_dirty = False
+                    for j in range(0, btn_len - 1, 2):
+                        if (btn_addr + j) in af_mem_map:
+                            data_word = (data[i+j+1] << 8) + data[i+j]
+                            if af_mem_map[btn_addr+j] != data_word:
+                                af_mem_map[btn_addr+j] = data_word
+                                af_mem_map_dirty = True
+                                # TODO: comment this out once we have further indications buttons are working better.
+                                logger.debug(f"Export: WR 0x{btn_addr+j:x} <-- 0x{data_word:x} [{data[i+j]:02x} {data[i+j+1]:02x}]")
+                    i += btn_len
 
-                    for hkey_fn, btn_info in af_btn_map.items():
-                        if btn_addr == btn_info["a"]:
-                            btn_val = (btn_data & btn_info["m"]) >> btn_info["s"]
-                            if btn_val == btn_info["v"]:
-                                logger.debug(f"Export press: 0x{btn_info['a']:x} & 0x{btn_info['m']:x} >> {btn_info['s']} = {btn_info['v']}")
+                    if af_mem_map_dirty:
+                        for hkey_fn, btn_info in af_btn_map.items():
+                            if btn_info["a"] in af_mem_map and \
+                               btn_info["v"] == (af_mem_map[btn_info["a"]] & btn_info["m"]) >> btn_info["s"]:
+                                logger.debug(f"Detect PRESS: 0x{btn_info['a']:x} | 0x{af_mem_map[btn_info['a']]:x} & 0x{btn_info['m']:x} >> {btn_info['s']} = {btn_info['v']}")
                                 hkey_fn()
 
                 else:
