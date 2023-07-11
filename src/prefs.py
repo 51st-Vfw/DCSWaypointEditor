@@ -61,12 +61,12 @@ class Preferences:
             data_path = None
         return data_path
 
-    def prefs_to_file(self, path):
-        with open(path, "w+") as f:
-            f.write("---- settings.ini ----\n\n")
-            with open(self.path_ini, "r") as f2:
-                f.writelines(f2.readlines())
-            f.write("----------------------\n\n")
+    def prefs_to_logger(self, logger):
+        logger.info(f"Preferences file contents:")
+        with open(self.path_ini, "r") as fh:
+            for line in fh:
+                if len(line.strip()) > 0:
+                    logger.info("    " + line.strip())
 
     # ================ general properties
 

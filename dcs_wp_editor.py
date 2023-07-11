@@ -32,7 +32,7 @@ from src.comp_dcs_we import dcs_we_vers_install, dcs_we_vers_latest, dcs_we_inst
 from src.db_objects import generate_default_bases
 from src.gui_util import gui_update_request, gui_new_install_request, gui_exception
 from src.gui_util import gui_update_dcsbios_cfg_request
-from src.logger import get_logger, log_preferences
+from src.logger import get_logger, trim_logfile
 from src.prefs import Preferences
 from src.prefs_gui import PreferencesGUI
 from src.wp_editor import WaypointEditor
@@ -73,8 +73,8 @@ def main(logger, data_path):
     vers_sw_cur = dcs_we_vers_install()
     vers_sw_latest = dcs_we_vers_latest()
 
-    log_preferences(prefs)
-    logger.info(f"Prefernces path: {prefs.path_ini}")
+    logger.info(f"Preferences path: {prefs.path_ini}")
+    prefs.prefs_to_logger(logger)
     logger.info(f"Profile dbase path: {prefs.path_profile_db}")
     logger.info(f"SW version (current): {vers_sw_cur}")
     logger.info(f"SW version (latest): {vers_sw_latest}")
@@ -113,8 +113,11 @@ def main(logger, data_path):
 if __name__ == "__main__":
     data_path = setup_app_data_environment()
 
+    log_header = "============ Launching DCSWE ============"
+
+    trim_logfile(log_header)
     logger = get_logger("dcswe")
-    logger.info("Launching")
+    logger.info(log_header)
 
     if data_path is not None:
         try:

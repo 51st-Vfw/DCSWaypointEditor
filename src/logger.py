@@ -3,7 +3,7 @@
 *  logger.py: Logging support
 *
 *  Copyright (C) 2020 Santi871
-*  Copyright (C) 2021 twillis/ilominar
+*  Copyright (C) 2021-23 twillis/ilominar
 *
 *  This program is free software: you can redistribute it and/or modify
 *  it under the terms of the GNU General Public License as published by
@@ -21,12 +21,22 @@
 '''
 
 import logging
+import os
 
 from sys import stdout
 
 
-def log_preferences(prefs):
-    prefs.prefs_to_file("log.txt")
+def trim_logfile(header):
+    if os.path.getsize("log.txt") > (64 * 1024):
+        with open("log.txt", "r") as fh:
+            logfile = fh.readlines()
+        with open("log.txt", "w+") as fh:
+            is_trimming = True
+            for line in logfile[1:]:
+                if is_trimming and line.find(header) != -1:
+                    is_trimming = False
+                if not is_trimming and len(line.strip()) > 0:
+                    fh.write(line)
 
 def get_logger(name):
     logger = logging.getLogger(name)
