@@ -1,5 +1,12 @@
 # DCS Waypoint Editor
 
+> DCS Waypoint Editor is no longer being actively supported or developed as we are moving our
+> time and effort to 
+> [JAFDTC](https://github.com/51st-Vfw/JAFDTC).
+> We encourage you to consider transitioning to that DTC.
+>
+> It's been a good run, hopefully you found it useful.
+
 DCS Waypoint Editor (DCSWE) is an application that allows you to input waypoints
 (including airframe-specific waypoints such as the MSN preplanned missions waypoints in
 the F/A-18C Hornet) and other data, such as avionics configurations, into DCS aircraft.
